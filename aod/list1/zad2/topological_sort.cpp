@@ -3,7 +3,8 @@
 #include <functional>
 #include <string>
 
-void modified_dfs_visit(std::vector<Node>& vertices, Node& u, int& time, bool& back_edges) {
+void modified_dfs_visit(std::vector<Node>& vertices, Node& u, int& time, bool& back_edges, std::vector<Node*>& order) {
+
   u.color = Color::GRAY;
   time += 1;
   u.d_time = time;
@@ -14,7 +15,7 @@ void modified_dfs_visit(std::vector<Node>& vertices, Node& u, int& time, bool& b
 
     if (adj_vertex.color == Color::WHITE) {
       adj_vertex.parent = &u;
-      modified_dfs_visit(vertices, adj_vertex, time, back_edges);
+      modified_dfs_visit(vertices, adj_vertex, time, back_edges, order);
     }
     if (adj_vertex.color == Color::GRAY) {
       back_edges = true;		// back edge is when program tries to reach a GRAY vertex
@@ -23,29 +24,30 @@ void modified_dfs_visit(std::vector<Node>& vertices, Node& u, int& time, bool& b
   u.color = Color::BLACK;
   time += 1;
   u.f_time = time;
+  order.push_back(&u);
 }
 
-void modified_dfs(std::vector<Node>& vertices, bool& back_edges) {
+std::vector<Node*> modified_dfs(std::vector<Node>& vertices, bool& back_edges) {
+
+  std::vector<Node*> order;
+
   int time = 0;
   for (auto& u : vertices) {
     if (u.color == Color::WHITE) {
-      modified_dfs_visit(vertices, u, time, back_edges);
+      modified_dfs_visit(vertices, u, time, back_edges, order);
     }
   }
+  return order;
 }
 
-std::vector<Node> topological_sort(std::vector<Node>& vertices, bool& back_edges) {
+std::vector<Node*> topological_sort(std::vector<Node>& vertices, bool& back_edges) {
 
   back_edges = false;		// if there is no back edges graph is acyclic - default: false
 
-  modified_dfs(vertices, back_edges);
+  std::vector<Node*> topological_order = modified_dfs(vertices, back_edges);
 
-  std::sort(vertices.begin(), vertices.end(),
-          [](const Node& a, const Node& b) {
-              return a.f_time > b.f_time;
-          });
-
-  return vertices;
+  std::reverse(topological_order.begin(), topological_order.end());
+  return topological_order;
 }
 
 
