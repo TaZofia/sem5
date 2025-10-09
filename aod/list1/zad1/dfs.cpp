@@ -5,7 +5,8 @@
 void dfs_visit(std::vector<Node>& vertices, Node& u, std::string& order, int& time) {
   order += "(" + std::to_string(u.value) + ") ";
   u.color = Color::GRAY;
-  u.d_time = time + 1;
+  time += 1;
+  u.d_time = time;
 
   for (const auto& edge : u.adj_edges) {
     int adj_vertex_value = edge.second;
@@ -17,7 +18,8 @@ void dfs_visit(std::vector<Node>& vertices, Node& u, std::string& order, int& ti
     }
   }
   u.color = Color::BLACK;
-  u.f_time = time + 1;
+  time += 1;
+  u.f_time = time;
 }
 
 std::string dfs(std::vector<Node>& vertices) {

@@ -5,7 +5,7 @@
 
 int main() {
 
-  std::string filename = "K:\\studia\\sem5\\aod\\list1\\aod_testy_moje\\1\\g1a.txt";
+  std::string filename = "K:\\studia\\sem5\\aod\\list1\\aod_testy1\\2\\g2b-6.txt";
 
   FileReader reader(filename);
 
@@ -28,7 +28,7 @@ int main() {
 
   std::cout << "Does graph include directed cycle?" << std::endl;
 
-  if(back_edges && directed) {
+  if(back_edges) {
     output = "YES";
   }
   if(!back_edges) {
