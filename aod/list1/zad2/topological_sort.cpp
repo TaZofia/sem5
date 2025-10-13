@@ -2,29 +2,49 @@
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <stack>
 
 void modified_dfs_visit(std::vector<Node>& vertices, Node& u, int& time, bool& back_edges, std::vector<Node*>& order) {
 
-  u.color = Color::GRAY;
-  time += 1;
-  u.d_time = time;
+    std::stack<Node*> stack;
+    std::stack<size_t> adj_index;
 
-  for (auto& edge : u.adj_edges) {
-    int adj_vertex_value = edge.second;
-    Node& adj_vertex = vertices[adj_vertex_value - 1];
+    stack.push(&u);
+    adj_index.push(0);
+    u.color = Color::GRAY;
+    time += 1;
+    u.d_time = time;
 
-    if (adj_vertex.color == Color::WHITE) {
-      adj_vertex.parent = &u;
-      modified_dfs_visit(vertices, adj_vertex, time, back_edges, order);
+    while (!stack.empty()) {
+        Node* u = stack.top();
+        size_t& i = adj_index.top();
+
+        if (i < u->adj_edges.size()) {
+            int adj_vertex_value = u->adj_edges[i].second;
+            i++;
+
+            Node& v = vertices[adj_vertex_value - 1];
+            if (v.color == Color::WHITE) {
+                v.parent = u;
+                v.color = Color::GRAY;
+                time += 1;
+                v.d_time = time;
+
+                stack.push(&v);
+                adj_index.push(0);
+            } else if (v.color == Color::GRAY) {
+                back_edges = true;
+            }
+        } else {
+            stack.pop();
+            adj_index.pop();
+
+            u->color = Color::BLACK;
+            time += 1;
+            u->f_time = time;
+            order.push_back(u);
+        }
     }
-    if (adj_vertex.color == Color::GRAY) {
-      back_edges = true;		// back edge is when program tries to reach a GRAY vertex
-    }
-  }
-  u.color = Color::BLACK;
-  time += 1;
-  u.f_time = time;
-  order.push_back(&u);
 }
 
 std::vector<Node*> modified_dfs(std::vector<Node>& vertices, bool& back_edges) {

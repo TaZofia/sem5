@@ -3,6 +3,8 @@
 #include <string>
 #include ".\\..\\read_file.hpp"
 
+//g++ .\..\read_file.cpp .\..\get_graph.cpp topological_sort.cpp main.cpp -o main.exe
+
 int main() {
 
   std::string filename = "K:\\studia\\sem5\\aod\\list1\\aod_testy1\\2\\g2b-6.txt";
@@ -31,7 +33,7 @@ int main() {
   if(back_edges) {
     output = "YES";
   }
-  if(!back_edges) {
+  else {
     output = "NO";
     std::cout << output << std::endl;
     if(num_of_v <= 200) {
@@ -43,5 +45,6 @@ int main() {
       std::cout << output << std::endl;
     }
   }
+  std::cout << output << std::endl;
   return 0;
 }
