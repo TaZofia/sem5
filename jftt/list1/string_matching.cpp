@@ -38,10 +38,51 @@ void finite_automation_matcher(std::string& text, std::string& pattern) {
   }
 }
 
+//------------KMP----------------------
+std::vector<int> compute_prefix_function(std::string& pattern) {
+  int m = pattern.size();
+  std::vector<int> pi(m);
+  pi[0] = 0;
+  int k = 0;
+  for (int q = 1; q < m; q++) {
+    while(k > 0 && pattern[k] != pattern[q]) {
+      k = pi[k - 1];
+    }
+    if(pattern[k] == pattern[q]) {
+      k++;
+    }
+    pi[q] = k;
+  }
+  return pi;
+}
 
+void kmp_matcher(std::string& text, std::string& pattern) {
+  int n = text.size();
+  int m = pattern.size();
 
+  std::vector<int> pi = compute_prefix_function(pattern);
+  int q = 0;
+
+  for (int i = 0; i < n; i++) {
+    while (q > 0 && pattern[q] != text[i]) {
+      q = pi[q - 1];
+    }
+    if (pattern[q] == text[i]) {
+      q++;
+    }
+    if (q == m) {
+      std::cout << "Pattern occurs with shift: " << i - m + 1 << std::endl;
+      q = pi[q - 1];
+    }
+  }
+}
 
 int main(int argc, char * argv[]) {
+
+  if(argc != 4) {
+    std::cout << "[ERROR] Wrong number of arguments!" << std::endl;
+    return 1;
+  }
 
   std::string mode = argv[1];
   std::string pattern = argv[2];
@@ -50,7 +91,7 @@ int main(int argc, char * argv[]) {
   std::ifstream file(file_name);
 
   if (!file.is_open()) {
-    std::cout << "[ERROR] can't open file" << file_name << std::endl;
+    std::cout << "[ERROR] can't open file: " << file_name << std::endl;
     return 1;
   }
 
@@ -64,11 +105,15 @@ int main(int argc, char * argv[]) {
   file.close();
 
   std::cout << "Number of chars: " << size << std::endl;
-  std::cout << "File:\n" << content << std::endl;
+  //std::cout << "File:\n" << content << std::endl << std::endl;
 
   if(mode == "FA") {
     finite_automation_matcher(content, pattern);
+  } else if(mode == "KMP") {
+    kmp_matcher(content, pattern);
+  } else {
+    std::cout << "[ERROR] Wrong mode!" << std::endl;
+    return 1;
   }
-
   return 0;
 }
