@@ -1,119 +1,122 @@
-#include <string>
-#include <fstream>
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <unordered_set>
+#include <algorithm>
 
-std::vector<std::vector<int>> compute_transition_function(std::string& pattern) {
-  int m = pattern.size();
-  int alphabet = 256;
-  std::vector<std::vector<int>> delta(m + 1, std::vector<int>(alphabet, 0));
+using namespace std;
 
-  for(int q = 0; q <= m; q++) {
-    for(int a = 0 ; a < alphabet ; a++) {
-      int k = std::min(m + 1, q + 2);
-      do {
-        k--;
-        std::string prefix = pattern.substr(0, k);
-        std::string suffix = pattern.substr(0, q) + static_cast<char>(a);
-        if(suffix.size() >= k && suffix.substr(suffix.size() - k) == prefix) {
-          break;
+// ==================== FA ====================
+vector<vector<int>> computeTransitionFunction(const wstring &pattern) {
+    int m = pattern.size();
+    unordered_set<wchar_t> alphabet(pattern.begin(), pattern.end());
+    vector<vector<int>> transition(m + 1, vector<int>(65536, 0));
+
+    for (int q = 0; q <= m; ++q) {
+        for (wchar_t a : alphabet) {
+            int k = min(m, q + 1);
+            while (k > 0 && !(pattern.substr(0, k) == (pattern.substr(0, q) + a).substr((q + 1) - k, k))) {
+                k--;
+            }
+            transition[q][a] = k;
         }
-      } while( k > 0 );
-      delta[q][a] = k;
     }
-  }
-  return delta;
+    return transition;
 }
 
-void finite_automation_matcher(std::string& text, std::string& pattern) {
-  int n = text.size();
-  int m = pattern.size();
-  std::vector<std::vector<int>> delta = compute_transition_function(pattern);
-  int q = 0;
-  for(int i = 0; i < n; i++) {
-    q = delta[q][text[i]];
-    if(q == m) {
-      std::cout << "Pattern occurs with shift: " << i - m + 1 << std::endl;
+vector<int> finiteAutomatonMatcher(const wstring &pattern, const wstring &text) {
+    vector<vector<int>> transition = computeTransitionFunction(pattern);
+    int m = pattern.size();
+    int q = 0;
+    vector<int> positions;
+
+    for (size_t i = 0; i < text.size(); ++i) {
+        q = transition[q][text[i]];
+        if (q == m) {
+            positions.push_back(i - m + 1);
+        }
     }
-  }
+    return positions;
 }
 
-//------------KMP----------------------
-std::vector<int> compute_prefix_function(std::string& pattern) {
-  int m = pattern.size();
-  std::vector<int> pi(m);
-  pi[0] = 0;
-  int k = 0;
-  for (int q = 1; q < m; q++) {
-    while(k > 0 && pattern[k] != pattern[q]) {
-      k = pi[k - 1];
+// ==================== KMP ====================
+vector<int> computePrefixFunction(const wstring &pattern) {
+    int m = pattern.size();
+    vector<int> pi(m, 0);
+    int k = 0;
+
+    for (int q = 1; q < m; ++q) {
+        while (k > 0 && pattern[k] != pattern[q]) {
+            k = pi[k - 1];
+        }
+        if (pattern[k] == pattern[q]) {
+            k++;
+        }
+        pi[q] = k;
     }
-    if(pattern[k] == pattern[q]) {
-      k++;
-    }
-    pi[q] = k;
-  }
-  return pi;
+    return pi;
 }
 
-void kmp_matcher(std::string& text, std::string& pattern) {
-  int n = text.size();
-  int m = pattern.size();
+vector<int> kmpMatcher(const wstring &pattern, const wstring &text) {
+    int m = pattern.size();
+    int n = text.size();
+    vector<int> pi = computePrefixFunction(pattern);
+    int q = 0;
+    vector<int> positions;
 
-  std::vector<int> pi = compute_prefix_function(pattern);
-  int q = 0;
-
-  for (int i = 0; i < n; i++) {
-    while (q > 0 && pattern[q] != text[i]) {
-      q = pi[q - 1];
+    for (int i = 0; i < n; ++i) {
+        while (q > 0 && pattern[q] != text[i]) {
+            q = pi[q - 1];
+        }
+        if (pattern[q] == text[i]) {
+            q++;
+        }
+        if (q == m) {
+            positions.push_back(i - m + 1);
+            q = pi[q - 1];
+        }
     }
-    if (pattern[q] == text[i]) {
-      q++;
-    }
-    if (q == m) {
-      std::cout << "Pattern occurs with shift: " << i - m + 1 << std::endl;
-      q = pi[q - 1];
-    }
-  }
+    return positions;
 }
 
-int main(int argc, char * argv[]) {
+// ==================== Main ====================
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        cerr << "Usage: FA|KMP <pattern_file> <text_file>\n";
+        return 1;
+    }
 
-  if(argc != 4) {
-    std::cout << "[ERROR] Wrong number of arguments!" << std::endl;
-    return 1;
-  }
+    string mode_str = argv[1];
+    string pattern_file = argv[2];
+    string text_file = argv[3];
 
-  std::string mode = argv[1];
-  std::string pattern = argv[2];
-  std::string file_name = argv[3];
+    // Wczytanie plików UTF-8 i konwersja do wstring
+    wstring_convert<codecvt_utf8<wchar_t>> converter;
 
-  std::ifstream file(file_name);
+    ifstream pf(pattern_file, ios::binary);
+    string pattern_content((istreambuf_iterator<char>(pf)), istreambuf_iterator<char>());
+    wstring pattern = converter.from_bytes(pattern_content);
 
-  if (!file.is_open()) {
-    std::cout << "[ERROR] can't open file: " << file_name << std::endl;
-    return 1;
-  }
+    ifstream tf(text_file, ios::binary);
+    string text_content((istreambuf_iterator<char>(tf)), istreambuf_iterator<char>());
+    wstring text = converter.from_bytes(text_content);
 
-  file.seekg(0, std::ios::end);
-  size_t size = file.tellg();
-  file.seekg(0);
+    vector<int> matches;
+    if (mode_str == "FA") {
+        matches = finiteAutomatonMatcher(pattern, text);
+    } else if (mode_str == "KMP") {
+        matches = kmpMatcher(pattern, text);
+    } else {
+        cerr << "Invalid mode, use FA or KMP.\n";
+        return 1;
+    }
 
-  std::string content(size, '\0');
-  file.read(&content[0], size);
+    for (int pos : matches) {
+        wcout << pos << endl;
+    }
 
-  file.close();
-
-  std::cout << "Number of chars: " << size << std::endl;
-  //std::cout << "File:\n" << content << std::endl << std::endl;
-
-  if(mode == "FA") {
-    finite_automation_matcher(content, pattern);
-  } else if(mode == "KMP") {
-    kmp_matcher(content, pattern);
-  } else {
-    std::cout << "[ERROR] Wrong mode!" << std::endl;
-    return 1;
-  }
-  return 0;
+    return 0;
 }
