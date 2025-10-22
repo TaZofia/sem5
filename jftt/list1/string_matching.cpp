@@ -93,7 +93,6 @@ int main(int argc, char* argv[]) {
     string pattern_file = argv[2];
     string text_file = argv[3];
 
-    // Wczytanie plików UTF-8 i konwersja do wstring
     wstring_convert<codecvt_utf8<wchar_t>> converter;
 
     ifstream pf(pattern_file, ios::binary);
