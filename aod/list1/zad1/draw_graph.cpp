@@ -23,7 +23,7 @@ void draw_graph(const std::vector<Node>& vertices, std::string graph_filename, s
 
   for (const auto& v : vertices) {
     if (v.parent != nullptr) {
-      file << v.value << " -> " << v.parent->value << "\n";
+      file << v.parent->value << " -> " << v.value << "\n";
     }
   }
 
