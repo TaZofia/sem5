@@ -1,4 +1,5 @@
 # Zofia Tarchalska
+# type to typ, x, y wektory
 function forward(type, x, y)
     sum = type(0.0)
 
@@ -69,7 +70,7 @@ function smallest_to_biggest(x, y)
     return sum_pos + sum_neg
 end
 
-
+# - wektory
 x = [2.718281828, -3.141592654, 1.414213562, 0.5772156649, 0.3010299957]
 y = [1486.2497, 878366.9879, -22.37492, 4773714.647, 0.000185049]
 types = [Float32, Float64]

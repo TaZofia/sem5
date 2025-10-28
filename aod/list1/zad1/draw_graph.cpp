@@ -5,7 +5,7 @@
 
 void draw_graph(const std::vector<Node>& vertices, std::string graph_filename, std::string algorithm_name) {
 
-  std::string filename = ".\\dot_files\\";
+  std::string filename = ".\\dot_files_zad1\\";
 
   // Delete path
   size_t last_slash = graph_filename.find_last_of("\\/");
@@ -26,7 +26,6 @@ void draw_graph(const std::vector<Node>& vertices, std::string graph_filename, s
       file << v.parent->value << " -> " << v.value << "\n";
     }
   }
-
   file << "}\n";
   file.close();
 }

@@ -9,21 +9,21 @@
 
 int main(int argc, char * argv[]) {
 
-  if(argc != 1 && argc != 2){
+  if(argc != 3 && argc != 2){
     std::cout << "[ERROR] Wrong number of arguments\n" << std::endl;
     return -1;
   }
 
+  std::string filename = argv[1];
+
   bool print_tree = false;
 
-  if (argc == 2) {
-    char* arg = argv[1];
+  if (argc == 3) {
+    char* arg = argv[2];
     if (*arg == 't') {
         print_tree = true;
     }
   }
-
-  std::string filename = "K:\\studia\\sem5\\aod\\list1\\aod_testy_moje\\1\\g1a.txt";
 
   FileReader reader(filename);
 
@@ -39,6 +39,8 @@ int main(int argc, char * argv[]) {
 
   Node& start = all_vertices[0];
 
+  std::cout << filename << std::endl;
+
   std::string bfs_order = bfs(all_vertices, start);
   std::cout << "---- BFS ----" << std::endl;
   std::cout << bfs_order << std::endl;
@@ -47,7 +49,7 @@ int main(int argc, char * argv[]) {
     draw_graph(all_vertices, filename, "bfs");
   }
 
-  // clean teh graph
+  // clean graph
   for (auto& v : all_vertices) {
     v.color = Color::WHITE;
     v.parent = nullptr;
@@ -62,6 +64,6 @@ int main(int argc, char * argv[]) {
   if(print_tree){
     draw_graph(all_vertices, filename, "dfs");
   }
-
+  std::cout << std::endl;
   return 0;
 }

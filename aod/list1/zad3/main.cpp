@@ -8,9 +8,14 @@
 
 // g++ .\..\read_file.cpp .\..\get_graph.cpp .\..\zad2\topological_sort.cpp scc.cpp main.cpp -o main.exe
 
-int main() {
+int main(int argc, char * argv[]) {
 
-    std::string filename = "K:\\studia\\sem5\\aod\\list1\\aod_testy1\\3\\g3-6.txt";
+    if(argc != 2){
+      std::cout << "[ERROR] Wrong number of arguments\n" << std::endl;
+      return -1;
+    }
+
+    std::string filename = argv[1];
 
     FileReader reader(filename);
 
@@ -24,9 +29,9 @@ int main() {
 
     std::vector<std::pair<int, int>> edges = reader.get_edges();
 
-	std::vector<std::vector<Node*>> scc = strongly_connected_components(edges, num_of_v, directed);
+	  std::vector<std::vector<Node*>> scc = strongly_connected_components(edges, num_of_v, directed);
 
-
+    std::cout << filename << std::endl;
     std::cout << "Number of strongly connected components: " << scc.size() << std::endl;
 
     std::string output = "";

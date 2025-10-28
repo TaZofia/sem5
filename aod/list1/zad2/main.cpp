@@ -5,9 +5,14 @@
 
 //g++ .\..\read_file.cpp .\..\get_graph.cpp topological_sort.cpp main.cpp -o main.exe
 
-int main() {
+int main(int argc, char * argv[]) {
 
-  std::string filename = "K:\\studia\\sem5\\aod\\list1\\aod_testy1\\2\\g2b-6.txt";
+  if(argc != 2){
+    std::cout << "[ERROR] Wrong number of arguments\n" << std::endl;
+    return -1;
+  }
+
+  std::string filename = argv[1];
 
   FileReader reader(filename);
 
@@ -28,23 +33,21 @@ int main() {
 
   std::string output = "";
 
-  std::cout << "Does graph include directed cycle?" << std::endl;
+  std::cout << filename << std::endl;
+  std::cout << "Does this graph include directed cycle?" << std::endl;
 
   if(back_edges) {
     output = "YES";
   }
   else {
-    output = "NO";
-    std::cout << output << std::endl;
+    output = "NO\n";
     if(num_of_v <= 200) {
-      output = "";
       for(Node* node : list_topological_order) {
         output += std::to_string(node->value) + " -> ";
       }
       output.erase(output.size() - 4);
-      std::cout << output << std::endl;
     }
   }
-  std::cout << output << std::endl;
+  std::cout << output << std::endl << std::endl;
   return 0;
 }

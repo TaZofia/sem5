@@ -1,5 +1,6 @@
 # Zofia Tarchalska
 
+# x - argument
 function f(x)
     sqrt(x^2 + 1.0) - 1.0
 end
