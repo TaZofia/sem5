@@ -1,3 +1,5 @@
+# Zofia Tarchalska
+
 using LinearAlgebra
 
 function hilb(n::Int)

@@ -4,6 +4,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[polish]{babel}
 \usepackage{amsmath}
+\usepackage[a4paper, left=1.5cm, right=1.5cm]{geometry}
+\usepackage{breqn}
 
 \title{Sprawozdanie laboratorium lista 2 - obliczenia naukowe}
 \author{\normalsize Zofia Tarchalska}
@@ -192,9 +194,56 @@ n   c                        rank(A) error Gauss              error inv
 \end{verbatim}
 
 \subsection*{Wnioski}
-\noindent Możemy zauważyć, że macierze Hilberta osiągają bardzo duże wartości współczynnika uwarunkowania (parametr \texttt{cond(A)}) już przy stosunkowo niewielkich rozmiarach n. Wysoki wskaźnik uwarunkowania oznacza, że układ $Ax = b$ jest źle uwarunkowany, czyli nawet niewielkie błędy w danych (w macierzy A lub w b) mogą prowadzić do dużych błędów w rozwiązaniu.Eksperymenty pokazują, że możemy to zaobserowować zarówno dla metody eliminacji Gauss'a jak i metody z użyciem odwrotności macierzy. Oznacza to, że numeryczne rozwiązanie układu Hilberta jest trudne do uzyskania z dużą dokładnością.\\
+\noindent Możemy zauważyć, że macierze Hilberta osiągają bardzo duże wartości współczynnika uwarunkowania (parametr \texttt{cond(A)}) już przy stosunkowo niewielkich rozmiarach n. Wysoki wskaźnik uwarunkowania oznacza, że układ $Ax = b$ jest źle uwarunkowany, czyli nawet niewielkie błędy w danych (w macierzy A lub w b) mogą prowadzić do dużych błędów w rozwiązaniu. Eksperymenty pokazują, że możemy to zaobserowować zarówno dla metody eliminacji Gauss'a jak i metody z użyciem odwrotności macierzy. Oznacza to, że numeryczne rozwiązanie układu Hilberta jest trudne do uzyskania z dużą dokładnością.\\
 Dla losowych macierzy z ustalonym współczynnikiem uwarunkowania
 c, błędy względne są małe i podobne dla obu metod. Oznacza to, że algorytmy są stabilne numerycznie dla macierzy dobrze uwarunkowanych.
 
+\section{Zadanie 4}
+W zadaniu 4 mamy do czynienia z dwoma różnymi postaciami tego samego wielomianu. Mowa tutaj o wielomianie Wilkinsona. Jego postać iloczynowa wygląda tak:
+\[
+p(x) = (x - 20)\cdot(x - 19)\cdot(x - 18)\cdot...\cdot(x - 3)\cdot(x - 2)\cdot(x - 1)
+\]
+Z tej postaci od razu łatwo policzyć wszystkie miejsca zerowe:
+\[
+x_0 \in {1, 2, 3, ..., 18, 19, 20}
+\]
+Druga postać tego wielomianu to postać naturalna (współczynnikowa):
+\begin{dmath}
+P(x) = x^{20} - 210x^{19} + 20615x^{18} - 1256850x^{17} + 53327946x^{16}
+-1672280820x^{15} + 40171771630x^{14} - 756111184500x^{13} + 11310276995381x^{12}
+-135585182899530x^{11} + 1307535010540395x^{10} - 10142299865511450x^{9}
++63030812099294896x^{8} - 311333643161390640x^{7} + 1206647803780373360x^{6}
+-3599979517947607200x^{5} + 8037811822645051776x^{4} - 12870931245150988800x^{3}
++13803759753640704000x^{2} - 8752948036761600000x + 2432902008176640000
+\end{dmath}
+
+\noindent Ta postać wynika bezpośrednio z wymnożenia wszystkich nawiasów z poprzedniej postaci. Liczenie miejsc zerowych jest w jej przypadku znacznie bardziej skomplikowane. Poniżej znajduje się porównanie rzeczywistych pierwiastków równania wraz z wyliczonymi pierwiastkami z wielomianu $P(x)$.
+
+
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+k    & $z_k$                & $|P(z_k)|$           & $|p(z_k)|$           & $|z_k - k|$          \\\hline
+1    & 0.9999999999998084   & 23323.616390897252   & 23310.180819556477   & 1.9162449405030202e-13 \\\hline
+2    & 2.0000000000114264   & 64613.550791712885   & 73156.18130995684    & 1.1426415369442111e-11 \\\hline
+3    & 2.9999999998168487   & 18851.098984644806   & 130289.20977428104   & 1.8315127192636282e-10 \\\hline
+4    & 3.999999983818672    & 2.6359390809003003e6 & 2.0313511850413054e6 & 1.6181327833209025e-8 \\\hline
+5    & 5.000000688670983    & 2.3709842874839526e7 & 2.1613359049100634e7 & 6.88670983350903e-7  \\\hline
+6    & 5.999988371602095    & 1.2641076289358065e8 & 1.2165063267640364e8 & 1.162839790502801e-5 \\\hline
+7    & 7.000112910766231    & 5.2301629899144447e8 & 5.061885949319773e8  & 0.00011291076623098917 \\\hline
+8    & 7.999279406281878    & 1.798432141726085e9  & 1.7402728325721796e9 & 0.0007205937181220534 \\\hline
+9    & 9.003273831140774    & 5.121881552672067e9  & 5.263758084354485e9  & 0.003273831140774064 \\\hline
+10   & 9.989265687778465    & 1.4157542666785017e10 & 1.4147808356077827e10 & 0.010734312221535092 \\\hline
+11   & 11.027997558569794   & 3.586354765112257e10 & 3.692632803664625e10 & 0.027997558569794023 \\\hline
+12   & 11.94827395840048    & 8.510931555828575e10 & 8.162184753413098e10 & 0.051726041599520656 \\\hline
+13   & 13.082031971969954   & 2.2136146301419052e11 & 2.04374354285492e11  & 0.08203197196995404  \\\hline
+14   & 13.906800565193148   & 3.812024574451268e11 & 3.8519295444834576e11 & 0.09319943480685211  \\\hline
+15   & 15.081439299377482   & 8.809029239560208e11 & 9.126025022282091e11 & 0.0814392993774824   \\\hline
+16   & 15.942404318674466   & 1.6747434633806333e12 & 1.6751148968378867e12 & 0.05759568132553383  \\\hline
+17   & 17.026861831476396   & 3.3067827086376123e12 & 3.5115331717998135e12 & 0.026861831476395537 \\\hline
+18   & 17.99048462339055    & 6.166202940769282e12 & 6.644365795060319e12 & 0.009515376609449788 \\\hline
+19   & 19.001981084996206   & 1.406783619602919e13 & 1.274643243051272e13 & 0.001981084996206306 \\\hline
+20   & 19.999803908064397   & 3.284992217648231e13 & 2.3837033672895914e13 & 0.00019609193560299332 \\\hline
+
+\end{tabular}
 
 \end{document}
