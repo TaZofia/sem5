@@ -13,7 +13,7 @@ Poniższy dokument jest sprawozdaniem z listy 1 z przedmiotu Obliczenia Naukowe
 \section{Zadanie 1}
 \noindent Zadanie 1 ma na celu rozpoznanie arytmetyki. \\\\
 \subsection{Epsilon maszynowy}
-Pierwszym podpunktem zadania było napisać program w języku Julia, który wyznacza iteracyjnie epsilony maszynowe dla typów zmiennoprzecinkowych: Float16, Float32, Float64. Epsilon to najmnijesza liczba > 0.0, która maszynowo następuje po 1.0. Zadanie zostało wykonane poprzez dzielenie przez 2 w pętli potencjalnego epsilona i sprawdzanie czy dodanie go do jedynki będzie skutkowało zwiększeniem wyniku. Oto output programu, porównujący wyznaczone doświadczalnie epsilony do wartości zwracanych przez funckje \texttt{eps(Float16), eps(Float32), eps(Float64)}. \\ 
+Pierwszym podpunktem zadania było napisać program w języku Julia, który wyznacza iteracyjnie epsilony maszynowe dla typów zmiennoprzecinkowych: Float16, Float32, Float64. Epsilon to najmniejsza liczba > 0.0, która maszynowo następuje po 1.0. Zadanie zostało wykonane poprzez dzielenie przez 2 w pętli potencjalnego epsilona i sprawdzanie czy dodanie go do jedynki będzie skutkowało zwiększeniem wyniku. Oto output programu, porównujący wyznaczone doświadczalnie epsilony do wartości zwracanych przez funckje \texttt{eps(Float16), eps(Float32), eps(Float64)}. \\ 
 \begin{verbatim}
 Float16
 iteracyjnie:   0.000977
@@ -62,7 +62,7 @@ Float64: 2.220446049250313e-16
 Powyższe wartości precyzji pokrywają się z wcześniej wyznaczonymi epsilonami maszynowymi, zatem nasuwa się prosty wniosek, że dla danej arytmetyki macheps jest równy jej precyzji.
 
 \subsection{Liczba maszynowa eta}
-Drugim podpunktem zadania było iteracyjne wyznaczenie liczby maszynowej eta. Jest to pierwsza liczba maszynowa większa od 0.0. Oto output programu, porównujący wyznaczone doświadczalnie liczby eta do wartości zwracanych przez funckje \texttt{nextfloat(Float16(0.0))}, \texttt{nextfloat(Float32(0.0))}, \\ \texttt{nextfloat(Float64(0.0))}.
+Drugim podpunktem zadania było iteracyjne wyznaczenie liczby maszynowej eta. Jest to pierwsza liczba maszynowa większa od 0.0. Oto output programu, porównujący wyznaczone doświadczalnie liczby eta do wartości zwracanych przez funkcje \texttt{nextfloat(Float16(0.0))}, \texttt{nextfloat(Float32(0.0))}, \\ \texttt{nextfloat(Float64(0.0))}.
 \begin{verbatim}
 Float16
 iteracyjnie:   6.0e-8
@@ -131,7 +131,7 @@ Float64: 2.2250738585072014e-308
 
 \subsection{Liczba $MAX$}
 $MAX$ to największa możliwa do wyrażenia liczba dla danego typu. Mantysa takiej liczby składa się z samych jedynek, a cecha osiąga najwyższą możliwą wartość.\\
-Aby wyznaczyć taką liczbę potrzebujemy poprzednią liczbę maszynową jedynki. Ma ona mantysę wypełnioną jedynie jedynkami. Mnożenie tej liczby razy 2 zwiększa nam wykładnik, lecz mantysa pozostaje taka sama. Wobec tego otrzymujemy coraz to większą liczbę, za każdym razem mającą największą możliwą mantysę. Gdy osiągniemy infinity przerwyamy eksperyment, ponieważ poprzednia znaleziona liczba jest tą szukaną. Wynikiem naszego doświadczenia jest:
+Aby wyznaczyć taką liczbę potrzebujemy poprzednią liczbę maszynową jedynki. Ma ona mantysę wypełnioną jedynie jedynkami. Mnożenie tej liczby razy 2 zwiększa nam wykładnik, lecz mantysa pozostaje taka sama. Wobec tego otrzymujemy coraz to większą liczbę, za każdym razem mającą największą możliwą mantysę. Gdy osiągniemy infinity przerywamy eksperyment, ponieważ poprzednia znaleziona liczba jest tą szukaną. Wynikiem naszego doświadczenia jest:
 \begin{verbatim}
 Float16
 iteracyjnie:   6.55e4
@@ -152,7 +152,7 @@ Gdy porównamy je z wartościami z pliku \texttt{float.h}, podobnie jak w przypa
 \texttt{DBL\_MAX} = $1.7976931348623158 \times 10^{308}$ (odpowiednik Float64)\\
 
 \subsection{Wnioski}
-Wszystkie obliczone powyżej wartości tzn. epsilon maszynowy, liczba eta, $MIN_{sub}$, $MIN_{nor}$, $MAX$ zostały poprawnie wyznaczone i są zgodne z wartościami zwracanymi przez funkcje systemowe. Standard IEEE-754, mimo swojej powszechności, ma ograniczenia w dokładnym wyrażaniu liczb rzeczywistych. Jednak im więcej bitów zostaje przeznaczone na zapis liczby tym większa dokładność obliczeń, mniejsze wartości najmniejszych liczb dodatnich oraz odstępy między kolejnymi liczbami. Jednocześnie znacząco zwiększa się nam zakresmożliwych do reprezentacji wartości.
+Wszystkie obliczone powyżej wartości tzn. epsilon maszynowy, liczba eta, $MIN_{sub}$, $MIN_{nor}$, $MAX$ zostały poprawnie wyznaczone i są zgodne z wartościami zwracanymi przez funkcje systemowe. Standard IEEE-754, mimo swojej powszechności, ma ograniczenia w dokładnym wyrażaniu liczb rzeczywistych. Jednak im więcej bitów zostaje przeznaczone na zapis liczby tym większa dokładność obliczeń, mniejsze wartości najmniejszych liczb dodatnich oraz odstępy między kolejnymi liczbami. Jednocześnie znacząco zwiększa się nam zakres możliwych do reprezentacji wartości.
 
 \section{Zadanie 2}
 Celem zadania 2 jest wyznaczenie epsilona maszynowego za pomocą obliczenia wartości wyrażenia \( 3 \left( \frac{4}{3} - 1 \right) - 1 \) i sprawdzenie czy sposób ten jest poprawny.\\
@@ -216,8 +216,8 @@ Output programu:
 \section{Zadanie 5}
 Zadanie polegało na wyliczeniu iloczynu skalarnego dwóch wektorów przy użyciu czterech różnych sposobów.\\
 \begin{itemize}
-    \item technika "w przód" - mnożymy odpowiadające sobie współrzędne i je dodajemy
-    \item technika "w tył" - mnożymy odpowiadające sobie współrzędne w kolejności od końca i je dodajemy
+    \item technika w przód - mnożymy odpowiadające sobie współrzędne i je dodajemy
+    \item technika w tył - mnożymy odpowiadające sobie współrzędne w kolejności od końca i je dodajemy
     \item od największego do najmniejszego (dodatnie liczby w porządku od największego
     do najmniejszego - sumujemy, ujemne liczby w porządku od najmniejszego do największego - sumujemy, następnie sumujemy dwie obliczone sumy)
     \item od najmniejszego do największego (przeciwnie do metody (c))
@@ -278,7 +278,7 @@ k = 19    0.0                           2.407412430484045e-35
 k = 20    0.0                           3.76158192263132e-37
 \end{verbatim}
 
-\subsection*{Wnioski} W sensie matematycznym funckje są równe, to znaczy powinniśmy otrzymywać takie same wyniki. Jednak ze względu na ograniczoną precyzję dla bardzo małych x $\sqrt{x^2 + 1} \approx 1$. Na ćwiczeniach z obliczeń naukowych rozwiązywaliśmy zadanie, w którym pokazaliśmy, że odjemowanie liczb o bardzo zbliżonej wartości powoduje duży spadek precyzji wyniku. Jest to spowodowane utratą liczb znaczących. Wobec tego w funckji $f(x)$, gdy odejmujemy 1 od $\sqrt{x^2 + 1}$ tracimy dokładność i otrzymujemy zera (od pewnego momentu). Funckja $g(x)$ jest w tym przypadku bardziej dokładna.
+\subsection*{Wnioski} W sensie matematycznym funckje są równe, to znaczy powinniśmy otrzymywać takie same wyniki. Jednak ze względu na ograniczoną precyzję dla bardzo małych x $\sqrt{x^2 + 1} \approx 1$. Na ćwiczeniach z obliczeń naukowych rozwiązywaliśmy zadanie, w którym pokazaliśmy, że odjemowanie liczb o bardzo zbliżonej wartości powoduje duży spadek precyzji wyniku. Jest to spowodowane utratą cyfr znaczących. Wobec tego w funckji $f(x)$, gdy odejmujemy 1 od $\sqrt{x^2 + 1}$ tracimy dokładność i otrzymujemy zera (od pewnego momentu). Funckja $g(x)$ jest w tym przypadku bardziej dokładna.
 
 \section{Zadanie 7}
 Pochodną funkcji możemy przybliżyć używając poniższego wzoru:\\
