@@ -1,0 +1,59 @@
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+
+\title{\normalsize Dowód nieregularności języka $L = \{ ww^R : w \in \{0,1\}^+, w \neq \varepsilon \}$}
+\author{\normalsize Zofia Tarchalska}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent Rozważamy język:
+\[
+L = \{ ww^R : w \in \{0,1\}^+, w \neq \varepsilon \},
+\]
+gdzie $w^R$ oznacza słowo $w$ zapisane w odwrotnej kolejności.
+
+\section*{Twierdzenie}
+Język $L$ nie jest regularny.
+
+\section*{Dowód}
+Załóżmy nie wprost, że $L$ jest regularny. Wtedy spełnia lemat o pompowaniu dla języków regularnych. Niech $p$ będzie długością pompowania wynikającą z lematu o pompowaniu.
+
+\noindent Weźmy słowo:
+\[
+s = 0^p 1 1 0^p,
+\]
+które należy do $L$, ponieważ można je zapisać jako $s = w w^R$ dla $w = 0^p 1$.
+
+\noindent Zgodnie z lematem o pompowaniu istnieje rozkład $s = xyz$ taki, że:
+\[
+|xy| \le p,\quad |y| > 0.
+\]
+Warunek $|xy| \le p$ oznacza, że zarówno $x$, jak i $y$ składają się wyłącznie z pierwszego segmentu zer. Zatem:
+\[
+y = 0^k \quad \text{dla pewnego } k \ge 1.
+\]
+
+\noindent Napompujmy słowo, biorąc $i = 2$. Otrzymujemy słowo:
+\[
+s' = xy^2z = 0^{p+k} 1 1 0^p.
+\]
+
+\noindent Jeśli $s'$ należałoby do $L$, to musiałoby mieć postać $u u^R$, co wymaga, aby liczba zer przed środkowymi jedynkami była równa liczbie zer po nich. Jednak:
+\[
+p + k \neq p,
+\]
+co prowadzi do sprzeczności.
+
+\noindent Zatem założenie, że $L$ jest regularny, jest fałszywe.
+
+\begin{flushright}
+\(\Box\)
+\end{flushright}
+
+\end{document}
