@@ -35,3 +35,30 @@ for k in 1:20
         " \\\\\\hline")
 end
 
+# Eksperyment ------------------------------------------
+
+text2 = read("wielomian_eksperyment.txt", String)
+
+coefficients2 = parse.(Float64, split(text2, ','))
+coefficients2 = reverse(coefficients2)
+
+P_polynomial2 = Polynomial(coefficients2)
+P_roots2 = roots(P_polynomial2)
+
+println("\n----------Eksperyment----------\n")
+println(rpad("k", 4),
+        " & ", rpad("\$z_k\$", 20), 
+        " & ", rpad("\$|P(z_k)|\$", 20), 
+        " & ", rpad("\$|p(z_k)|\$", 20), 
+        " & ", rpad("\$|z_k - k|\$", 20), 
+        " \\\\\\hline")
+
+for k in 1:20
+    z_k = P_roots2[k]
+    println(rpad(k, 4),
+        " & ", rpad(z_k, 20),
+        " & ", rpad(abs(P_polynomial2(z_k)), 20),
+        " & ", rpad(abs(p(z_k)), 20),
+        " & ", rpad(abs(z_k - k), 20),
+        " \\\\\\hline")
+end

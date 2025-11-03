@@ -199,6 +199,7 @@ Dla losowych macierzy z ustalonym współczynnikiem uwarunkowania
 c, błędy względne są małe i podobne dla obu metod. Oznacza to, że algorytmy są stabilne numerycznie dla macierzy dobrze uwarunkowanych.
 
 \section{Zadanie 4}
+\subsection*{Podpunkt a}
 W zadaniu 4 mamy do czynienia z dwoma różnymi postaciami tego samego wielomianu. Mowa tutaj o wielomianie Wilkinsona. Jego postać iloczynowa wygląda tak:
 \[
 p(x) = (x - 20)\cdot(x - 19)\cdot(x - 18)\cdot...\cdot(x - 3)\cdot(x - 2)\cdot(x - 1)
@@ -217,8 +218,8 @@ P(x) = x^{20} - 210x^{19} + 20615x^{18} - 1256850x^{17} + 53327946x^{16}
 +13803759753640704000x^{2} - 8752948036761600000x + 2432902008176640000
 \end{dmath}
 
-\noindent Ta postać wynika bezpośrednio z wymnożenia wszystkich nawiasów z poprzedniej postaci. Liczenie miejsc zerowych jest w jej przypadku znacznie bardziej skomplikowane. Poniżej znajduje się porównanie rzeczywistych pierwiastków równania wraz z wyliczonymi pierwiastkami z wielomianu $P(x)$.
-
+\noindent Ta postać wynika bezpośrednio z wymnożenia wszystkich nawiasów z poprzedniej postaci. Liczenie miejsc zerowych jest w jej przypadku znacznie bardziej skomplikowane. Poniżej znajduje się porównanie rzeczywistych pierwiastków równania wraz z wyliczonymi pierwiastkami z wielomianu $P(x)$, wartością wielomianu p i P dla obliczonego miesjca zerowego, oraz różnicę między rzeczywistym a wyliczonym m. zer.
+\noindent \\
 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
@@ -245,5 +246,544 @@ k    & $z_k$                & $|P(z_k)|$           & $|p(z_k)|$           & $|z_
 20   & 19.999803908064397   & 3.284992217648231e13 & 2.3837033672895914e13 & 0.00019609193560299332 \\\hline
 
 \end{tabular}
+
+\subsubsection*{Wnioski}
+Wyliczone miejsca zerowe są bardzo zbliżone do rzeczywistych miejsc zerowych. Jednak po podstawieniu ich z powrotem do wzoru otrzymujemy bardzo rozbieżne wyniki. Jak sama nazwa wskazuje miejsce zerowe to taki argument, dla którego funkcja osiąga wartość 0. Żadna z policzonych $P(z_k), p(z_k)$ nie jest nawet bliska 0. Otrzymujemy wartości od rzędu $10^4$ aż do $10^13$. Dzieje się tak, , ponieważ wielomian w postaci naturalnej przechowywany jest niedokładnie z uwagi na ograniczenia arytmetyki Float64. Niektóre współczynniki wielomianu przy niższych potęgach x są dużymi liczbami, których zapis pomija killka cyfr znaczących. Nie bez powodu wielomian jest nazwany złośliwym. Nawet bardzo małe oddalnie od precyzyjnej wartości miejsca zerowego, powoduje ogromne zaburzenia wyniku. Sugeruje to złe uwarunkowanie sposobu obliczania pierwiastków wielomianu.
+ 
+
+\subsection*{Podpunkt b}
+Celem eksperymentu Wilkinsona będącego tematem podpunktu b było zaburzenie jednego ze współczynników i obserwacja zachodzących zmian. Współczynnikiem, który uległ zmianie był $-210$. Teraz przyjmuje wartość $-210-2^{-23}$. 
+
+\noindent Analogiczna tabela jak w przykładzie powyżej tym razem dla wielomianu o zaburzonym współczynniku.\\
+
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+k    & $z_k$                & $|P(z_k)|$           & $|p(z_k)|$           & $|z_k - k|$          \\\hline
+1    & 0.9999999999999805 + 0.0im & 2168.9361669986724   & 2376.9361669985137   & 1.9539925233402755e-14 \\\hline
+2    & 1.9999999999985736 + 0.0im & 29948.438957395843   & 9132.438957447212    & 1.4264145420384011e-12 \\\hline
+3    & 3.000000000105087 + 0.0im & 239010.53520956426   & 74756.28518912957    & 1.0508705017286957e-10 \\\hline
+4    & 3.9999999950066143 + 0.0im & 939293.8049425513    & 626853.3644463811    & 4.993385704921138e-9 \\\hline
+5    & 5.000000034712704 + 0.0im & 7.44868039679552e6   & 1.0894298660834588e6 & 3.4712703822492585e-8 \\\hline
+6    & 6.000005852511414 + 0.0im & 1.4689332508961653e7 & 6.12250863773296e7   & 5.852511414161654e-6 \\\hline
+7    & 6.999704466216799 + 0.0im & 5.817946400915084e7  & 1.3252981745917735e9 & 0.00029553378320112955 \\\hline
+8    & 8.007226654064777 + 0.0im & 1.3954205929609105e8 & 1.7380734718418133e10 & 0.0072266540647767386 \\\hline
+9    & 8.917396943382494 + 0.0im & 2.459617755654851e8  & 1.3487291517349089e11 & 0.082603056617506    \\\hline
+10   & 10.09529034477879 - 0.6432770896263527im & 2.291018560461982e9  & 1.4824347490765474e12 & 0.6502965968281023   \\\hline
+11   & 10.09529034477879 + 0.6432770896263527im & 2.291018560461982e9  & 1.4824347490765474e12 & 1.110092326920887    \\\hline
+12   & 11.793588728372308 - 1.6522535463872843im & 2.077690789102519e10 & 3.2939582416936758e13 & 1.6650968123818863   \\\hline
+13   & 11.793588728372308 + 1.6522535463872843im & 2.077690789102519e10 & 3.2939582416936758e13 & 2.0458176697496047   \\\hline
+14   & 13.99233053734825 - 2.5188196443048287im & 9.390730597798799e10 & 9.545412818924855e14 & 2.5188313205122075   \\\hline
+15   & 13.99233053734825 + 2.5188196443048287im & 9.390730597798799e10 & 9.545412818924855e14 & 2.7129043747424584   \\\hline
+16   & 16.73073008036981 - 2.8126272986972136im & 9.592356563898315e11 & 2.7420705762218132e16 & 2.906000476898456    \\\hline
+17   & 16.73073008036981 + 2.8126272986972136im & 9.592356563898315e11 & 2.7420705762218132e16 & 2.8254873227453055   \\\hline
+18   & 19.50243895868367 - 1.9403320231930836im & 5.050467401799687e12 & 4.2524547099295936e17 & 2.4540193937292005   \\\hline
+19   & 19.50243895868367 + 1.9403320231930836im & 5.050467401799687e12 & 4.2524547099295936e17 & 2.004328632592893    \\\hline
+20   & 20.84690887410499 + 0.0im & 4.858653129933677e12 & 1.374367214153433e18 & 0.8469088741049902   \\\hline
+\end{tabular}
+}
+
+\subsubsection*{Wnioski}
+Wykonany powyżej eksperyment potwierdza tezę, że zadanie jest źle uwarunkowane. Tym razem, niewielkie zaburzenie danych, powoduje pojawienie się pierwiastków zespolonych. Jest to coś kompletnie innego niż spodziewane wyniki. Wartości funkcji dla tych rzekomych pierwiastków są jeszcze większe niż w przypadku podpunktu a.
+
+\section{Zadanie 5}
+W tym zadaniu mamy rozważyć problem rekurencyjny dotyczący wzrotu populacji. Mamy równanie:
+\[
+p_{n+1} := p_n + r \cdot p_n \cdot (1 - p_n)
+\]
+określone dla n = {0, 1, 2, 3, ...} oraz r będącej pewną stałą.
+Należało wykonać doświadczenie, w którym $p_0 = 0.01$ a $r = 3$.0. Liczba iteracji w każdym przypadku wynosiła 40, z tym, że rekurencję należało policzyć na dwa sposoby:
+\begin{itemize}
+    \item sposób 1 zakładał policzenie reukrencji klasycznie, w pętli 40-krotnie
+    \item sposób drugi zakładał obcięcie wyniku do trzech cyfr po przecinku po wykonaniu 10 iteracji i nastęnie policzenie już klasycznie do końca.
+\end{itemize}
+Wyniki dla arytmetyki \texttt{Float32} zawarte są w dwóch pierwszych kolumnach. Pierwsza to sposób 1, druga sposób 2. W kolumnie trzeciej znajdują się wyniki dla sposobu 1 i arytmetyki \texttt{Float64}
+
+\noindent
+\begin{minipage}[t]{0.3\textwidth}
+\begin{verbatim}
+Iter | p
+1    | 0.0397
+2    | 0.15407173
+3    | 0.5450726
+4    | 1.2889781
+5    | 0.1715188
+6    | 0.5978191
+7    | 1.3191134
+8    | 0.056273222
+9    | 0.21559286
+10   | 0.7229306
+
+11   | 1.3238364
+12   | 0.037716985
+13   | 0.14660022
+14   | 0.521926
+15   | 1.2704837
+16   | 0.2395482
+17   | 0.7860428
+18   | 1.2905813
+19   | 0.16552472
+20   | 0.5799036
+21   | 1.3107498
+22   | 0.088804245
+23   | 0.3315584
+24   | 0.9964407
+25   | 1.0070806
+26   | 0.9856885
+27   | 1.0280086
+28   | 0.9416294
+29   | 1.1065198
+30   | 0.7529209
+31   | 1.3110139
+32   | 0.0877831
+33   | 0.3280148
+34   | 0.9892781
+35   | 1.021099
+36   | 0.95646656
+37   | 1.0813814
+38   | 0.81736827
+39   | 1.2652004
+40   | 0.25860548
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.3\textwidth}
+\begin{verbatim}
+Iter | p (modified)
+1    | 0.0397
+2    | 0.15407173
+3    | 0.5450726
+4    | 1.2889781
+5    | 0.1715188
+6    | 0.5978191
+7    | 1.3191134
+8    | 0.056273222
+9    | 0.21559286
+10   | 0.7229306
+cut  | 0.722
+11   | 1.3241479
+12   | 0.036488414
+13   | 0.14195944
+14   | 0.50738037
+15   | 1.2572169
+16   | 0.28708452
+17   | 0.9010855
+18   | 1.1684768
+19   | 0.577893
+20   | 1.3096911
+21   | 0.09289217
+22   | 0.34568182
+23   | 1.0242395
+24   | 0.94975823
+25   | 1.0929108
+26   | 0.7882812
+27   | 1.2889631
+28   | 0.17157483
+29   | 0.59798557
+30   | 1.3191822
+31   | 0.05600393
+32   | 0.21460639
+33   | 0.7202578
+34   | 1.3247173
+35   | 0.034241438
+36   | 0.13344833
+37   | 0.48036796
+38   | 1.2292118
+39   | 0.3839622
+40   | 1.093568
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.3\textwidth}
+\begin{verbatim}
+Iter | p
+1    | 0.0397
+2    | 0.15407173000000002
+3    | 0.5450726260444213
+4    | 1.2889780011888006
+5    | 0.17151914210917552
+6    | 0.5978201201070994
+7    | 1.3191137924137974
+8    | 0.056271577646256565
+9    | 0.21558683923263022
+10   | 0.722914301179573
+
+11   | 1.3238419441684408
+12   | 0.03769529725473175
+13   | 0.14651838271355924
+14   | 0.521670621435246
+15   | 1.2702617739350768
+16   | 0.24035217277824272
+17   | 0.7881011902353041
+18   | 1.2890943027903075
+19   | 0.17108484670194324
+20   | 0.5965293124946907
+21   | 1.3185755879825978
+22   | 0.058377608259430724
+23   | 0.22328659759944824
+24   | 0.7435756763951792
+25   | 1.315588346001072
+26   | 0.07003529560277899
+27   | 0.26542635452061003
+28   | 0.8503519690601384
+29   | 1.2321124623871897
+30   | 0.37414648963928676
+31   | 1.0766291714289444
+32   | 0.8291255674004515
+33   | 1.2541546500504441
+34   | 0.29790694147232066
+35   | 0.9253821285571046
+36   | 1.1325322626697856
+37   | 0.6822410727153098
+38   | 1.3326056469620293
+39   | 0.0029091569028512065
+40   | 0.011611238029748606 
+\end{verbatim}
+\end{minipage}
+\subsection*{Wnioski}
+Możemy zauważyć, że wyniki dla sposobu 1 pokrywają się dość dokładnie w obydwu arytmatykach. Dopiero w iteracji 18 występuje różnica na 2 miejscu znaczącym , a w iteracji 23 na pierwszym. W okolicach 19 iteracji model na którym zastosowaliśmy sposób 2, czyli sposób z obcięciem, zaczyna mocno odstawać od wyników w pozostałych dwóch kolumnach. Jest to spowodowane faktem, że nasze rygorystyczne obcięcie (do trzeciego miejsca po przecinku) kumuluje się w kolejnych iteracjach. Program działa rekurencyjnie, a więc nasze uproszczenie zastosowane po kroku 10 nie daje o sobie zapomnieć w kolejnych iteracjach. Zwłaszcza, że we wzorze wartość $p_n$ jest podnoszona do kwadratu. Nasza utrata precyzji jest przez to jeszcze większa.
+
+\noindent Wobec tego zauważamy, że zarówno zastosowane uproszczenie w sposobie 2 jak i stosowana arytmetyka mają znaczenie w precyzji obliczeń. Najbardziej godne zaufania i zapewne bliskie prawdy są obliczenia we \texttt{Float64} bez obcięć, jednak nawet ta aryemetyka i ten konkretny spsób nie gwarantują nam 100-procentowej dokładności.
+
+\section{Zadanie 6}
+W zadaniu 6 znów spotykamy się z rekurencją:
+\[
+x_{n+1} := {x_n}^2 + c
+\]
+dla n = {0, 1, 2, 3, ...}, gdzie c jest pewną daną stałą.
+Eksperymenty mamy przeprowadzić dla danych:
+\begin{itemize}
+    \item $c = -2$ i $x_0 \in \{1, 2, 1.99999999999999\}$
+    \item $c = -1$ i $x_0 \in \{1, -1, 0.75, 0.25\}$
+\end{itemize}
+
+\noindent Poniżej wartości otrzymane dla c = -2\\
+\noindent
+\begin{minipage}[t]{0.3\textwidth}
+\begin{verbatim}
+    x = 1.0
+    Iter | x
+    1    | -1.0
+    2    | -1.0
+    3    | -1.0
+    4    | -1.0
+    5    | -1.0
+    6    | -1.0
+    7    | -1.0
+    8    | -1.0
+    9    | -1.0
+    10   | -1.0
+    11   | -1.0
+    12   | -1.0
+    13   | -1.0
+    14   | -1.0
+    15   | -1.0
+    16   | -1.0
+    17   | -1.0
+    18   | -1.0
+    19   | -1.0
+    20   | -1.0
+    21   | -1.0
+    22   | -1.0
+    23   | -1.0
+    24   | -1.0
+    25   | -1.0
+    26   | -1.0
+    27   | -1.0
+    28   | -1.0
+    29   | -1.0
+    30   | -1.0
+    31   | -1.0
+    32   | -1.0
+    33   | -1.0
+    34   | -1.0
+    35   | -1.0
+    36   | -1.0
+    37   | -1.0
+    38   | -1.0
+    39   | -1.0
+    40   | -1.0
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.3\textwidth}
+\begin{verbatim}
+    x = 2.0
+    Iter | x
+    1    | 2.0
+    2    | 2.0
+    3    | 2.0
+    4    | 2.0
+    5    | 2.0
+    6    | 2.0
+    7    | 2.0
+    8    | 2.0
+    9    | 2.0
+    10   | 2.0
+    11   | 2.0
+    12   | 2.0
+    13   | 2.0
+    14   | 2.0
+    15   | 2.0
+    16   | 2.0
+    17   | 2.0
+    18   | 2.0
+    19   | 2.0
+    20   | 2.0
+    21   | 2.0
+    22   | 2.0
+    23   | 2.0
+    24   | 2.0
+    25   | 2.0
+    26   | 2.0
+    27   | 2.0
+    28   | 2.0
+    29   | 2.0
+    30   | 2.0
+    31   | 2.0
+    32   | 2.0
+    33   | 2.0
+    34   | 2.0
+    35   | 2.0
+    36   | 2.0
+    37   | 2.0
+    38   | 2.0
+    39   | 2.0
+    40   | 2.0
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.3\textwidth}
+\begin{verbatim}
+    x = 1.99999999999999
+    Iter | x
+    1    | 1.99999999999996
+    2    | 1.9999999999998401
+    3    | 1.9999999999993605
+    4    | 1.999999999997442
+    5    | 1.9999999999897682
+    6    | 1.9999999999590727
+    7    | 1.999999999836291
+    8    | 1.9999999993451638
+    9    | 1.9999999973806553
+    10   | 1.999999989522621
+    11   | 1.9999999580904841
+    12   | 1.9999998323619383
+    13   | 1.9999993294477814
+    14   | 1.9999973177915749
+    15   | 1.9999892711734937
+    16   | 1.9999570848090826
+    17   | 1.999828341078044
+    18   | 1.9993133937789613
+    19   | 1.9972540465439481
+    20   | 1.9890237264361752
+    21   | 1.9562153843260486
+    22   | 1.82677862987391
+    23   | 1.3371201625639997
+    24   | -0.21210967086482313
+    25   | -1.9550094875256163
+    26   | 1.822062096315173
+    27   | 1.319910282828443
+    28   | -0.2578368452837396
+    29   | -1.9335201612141288
+    30   | 1.7385002138215109
+    31   | 1.0223829934574389
+    32   | -0.9547330146890065
+    33   | -1.0884848706628412
+    34   | -0.8152006863380978
+    35   | -1.3354478409938944
+    36   | -0.21657906398474625
+    37   | -1.953093509043491
+    38   | 1.8145742550678174
+    39   | 1.2926797271549244
+    40   | -0.3289791230026702
+\end{verbatim}
+\end{minipage}
+
+\noindent \\\\Teraz wartości dla c = -1\\
+\noindent
+\begin{minipage}[t]{0.5\textwidth}
+\begin{verbatim}
+x = 1.0
+Iter | x
+1    | 0.0
+2    | -1.0
+3    | 0.0
+4    | -1.0
+5    | 0.0
+6    | -1.0
+7    | 0.0
+8    | -1.0
+9    | 0.0
+10   | -1.0
+11   | 0.0
+12   | -1.0
+13   | 0.0
+14   | -1.0
+15   | 0.0
+16   | -1.0
+17   | 0.0
+18   | -1.0
+19   | 0.0
+20   | -1.0
+21   | 0.0
+22   | -1.0
+23   | 0.0
+24   | -1.0
+25   | 0.0
+26   | -1.0
+27   | 0.0
+28   | -1.0
+29   | 0.0
+30   | -1.0
+31   | 0.0
+32   | -1.0
+33   | 0.0
+34   | -1.0
+35   | 0.0
+36   | -1.0
+37   | 0.0
+38   | -1.0
+39   | 0.0
+40   | -1.0
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.5\textwidth}
+\begin{verbatim}
+x = -1.0
+Iter | x
+1    | 0.0
+2    | -1.0
+3    | 0.0
+4    | -1.0
+5    | 0.0
+6    | -1.0
+7    | 0.0
+8    | -1.0
+9    | 0.0
+10   | -1.0
+11   | 0.0
+12   | -1.0
+13   | 0.0
+14   | -1.0
+15   | 0.0
+16   | -1.0
+17   | 0.0
+18   | -1.0
+19   | 0.0
+20   | -1.0
+21   | 0.0
+22   | -1.0
+23   | 0.0
+24   | -1.0
+25   | 0.0
+26   | -1.0
+27   | 0.0
+28   | -1.0
+29   | 0.0
+30   | -1.0
+31   | 0.0
+32   | -1.0
+33   | 0.0
+34   | -1.0
+35   | 0.0
+36   | -1.0
+37   | 0.0
+38   | -1.0
+39   | 0.0
+40   | -1.0
+\end{verbatim}
+\end{minipage}
+\begin{minipage}[t]{0.5\textwidth}
+\begin{verbatim}
+x = 0.75
+Iter | x
+1    | -0.4375
+2    | -0.80859375
+3    | -0.3461761474609375
+4    | -0.8801620749291033
+5    | -0.2253147218564956
+6    | -0.9492332761147301
+7    | -0.0989561875164966
+8    | -0.9902076729521999
+9    | -0.01948876442658909
+10   | -0.999620188061125
+11   | -0.0007594796206411569
+12   | -0.9999994231907058
+13   | -1.1536182557003727e-6
+14   | -0.9999999999986692
+15   | -2.6616486792363503e-12
+16   | -1.0
+17   | 0.0
+18   | -1.0
+19   | 0.0
+20   | -1.0
+21   | 0.0
+22   | -1.0
+23   | 0.0
+24   | -1.0
+25   | 0.0
+26   | -1.0
+27   | 0.0
+28   | -1.0
+29   | 0.0
+30   | -1.0
+31   | 0.0
+32   | -1.0
+33   | 0.0
+34   | -1.0
+35   | 0.0
+36   | -1.0
+37   | 0.0
+38   | -1.0
+39   | 0.0
+40   | -1.0
+\end{verbatim}
+\end{minipage}%
+\begin{minipage}[t]{0.5\textwidth}
+\begin{verbatim}
+x = 0.25
+Iter | x
+1    | -0.9375
+2    | -0.12109375
+3    | -0.9853363037109375
+4    | -0.029112368589267135
+5    | -0.9991524699951226
+6    | -0.0016943417026455965
+7    | -0.9999971292061947
+8    | -5.741579369278327e-6
+9    | -0.9999999999670343
+10   | -6.593148249578462e-11
+11   | -1.0
+12   | 0.0
+13   | -1.0
+14   | 0.0
+15   | -1.0
+16   | 0.0
+17   | -1.0
+18   | 0.0
+19   | -1.0
+20   | 0.0
+21   | -1.0
+22   | 0.0
+23   | -1.0
+24   | 0.0
+25   | -1.0
+26   | 0.0
+27   | -1.0
+28   | 0.0
+29   | -1.0
+30   | 0.0
+31   | -1.0
+32   | 0.0
+33   | -1.0
+34   | 0.0
+35   | -1.0
+36   | 0.0
+37   | -1.0
+38   | 0.0
+39   | -1.0
+40   | 0.0
+\end{verbatim}
+\end{minipage}
+
+
+
 
 \end{document}
