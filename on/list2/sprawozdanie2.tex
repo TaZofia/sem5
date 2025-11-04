@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -6,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage[a4paper, left=1.5cm, right=1.5cm]{geometry}
 \usepackage{breqn}
+\usepackage{float}
 
 \title{Sprawozdanie laboratorium lista 2 - obliczenia naukowe}
 \author{\normalsize Zofia Tarchalska}
@@ -62,9 +64,9 @@ smallest_to_biggest: -0.004296342842280865
 \end{verbatim}
 \end{minipage}
 
-\noindent \\\\Można zauważyć, że jeśli chodzi o arytmetykę single wyniki w ogóle nie różnią się od tych uzyskanych w poprzedniej próbie. Dzieje się tak, ponieważ usuwane cyfry są na gracnicy precyzji. Inaczej jest w przypadku double, w tej arytmetyce otrzymujemy różne rezultaty. 
+\noindent \\\\Można zauważyć, że jeśli chodzi o arytmetykę single wyniki w ogóle nie różnią się od tych uzyskanych w poprzedniej próbie. Dzieje się tak, ponieważ usuwane cyfry są na granicy precyzji. Inaczej jest w przypadku double, w tej arytmetyce otrzymujemy różne rezultaty. 
 
-\subsection*{Wnioski} Okazuje się, że w przypadku arytmetyki Float64 niewielka zmiana na 10 miejscu po przecinku powoduje zmianę wyniku o 7 rzędów wielkości. Najpierw wynik był rzędu $10^{-10}$ żeby następnie wzrosnąć rzędu $10_{-3}$ (dla sposobu forawrd i backward, ponieważ są to te bardziej precyzyjne sposoby). Widzimy zatem, że zadanie jest źle uwraunkowane (mała zmiana w danych powoduje duże zmiany wyniku).
+\subsection*{Wnioski} Okazuje się, że w przypadku arytmetyki Float64 niewielka zmiana na 10 miejscu po przecinku powoduje zmianę wyniku o 7 rzędów wielkości. Najpierw wynik był rzędu $10^{-10}$ żeby następnie wzrosnąć do rzędu wielokości $10^{-3}$ (dla sposobu forward i backward, ponieważ są to te bardziej precyzyjne sposoby). Widzimy zatem, że zadanie jest źle uwraunkowane (mała zmiana w danych powoduje duże zmiany wyniku).
 
 \section{Zadanie 2}
 W zadaniu należy narysować wykres funkcji $f(x) = e^xln(1+e^{-x})$ w co najmniej dwóch różnych programach do wizualizacji. Następnie trzeba policzyć jej granicę i porównać z otrzymanymi wykresami.\\
@@ -88,9 +90,9 @@ W zadaniu należy narysować wykres funkcji $f(x) = e^xln(1+e^{-x})$ w co najmni
  \lim_{x \to \infty } e^x \cdot ln(1 + e^{-x}) = \lim_{x \to \infty} \frac {-e^{-x}}{(1 + e^{-x}) \cdot (-e ^{-x})} = \lim_{x \to \infty} \frac{1}{1 + e^{-x}} = 1
 \]
 
-\noindent Jak widać rzeczywisty przebieg funckji różni się od tego co zwracają nam obydwa programy.
+\noindent Jak widać rzeczywisty przebieg funkcji różni się od tego co zwracają nam obydwa programy.
 \subsection*{Wnioski} 
-Znów zadanie charakteryzuje się silnym uwarunkowaniem numerycznym. Niedokładności wynikające z ograniczonej percyzji, prowadzą do odchyleń wartości funkcji od prawidłowego wyniku, szczególnie w zakresie $x \in [30, 36]$. Dla argumentów $>36$ funkcja zbiega do 0, ponieważ zachodzi przybliżenie $ 1 + e^{-x} \approx 1$ zatem $ln(1 + e^{-x}) \approx 0$. Jest to sprzeczne z rzeczywistym przebiegiem funkcji i wyznaczoną granicą analityczną. Zaburzenie występuje w obydwu programach zewnętrznych, co oznacza złe uwarunkowanie zadania.
+Znów zadanie charakteryzuje się silnym uwarunkowaniem numerycznym. Niedokładności wynikające z ograniczonej precyzji, prowadzą do odchyleń wartości funkcji od prawidłowego wyniku, szczególnie w zakresie $x \in [30, 36]$. Dla argumentów $>36$ funkcja zbiega do 0, ponieważ zachodzi przybliżenie $ 1 + e^{-x} \approx 1$ zatem $ln(1 + e^{-x}) \approx 0$. Jest to sprzeczne z rzeczywistym przebiegiem funkcji i wyznaczoną granicą analityczną. Zaburzenie występuje w obydwu programach zewnętrznych, co oznacza złe uwarunkowanie zadania.
 
 \section{Zadanie 3}
 Zadanie polegało na rozwiązaniu układu równań liniowych dwoma różnymi sposobami oraz porównaniu ich pod kątem policzonych błędów względnych.
@@ -112,8 +114,7 @@ Zadanie polegało na rozwiązaniu układu równań liniowych dwoma różnymi spo
     \item metodą z macierza odwrotną - $x = inv(A) * b$
 \end{itemize}
 
-\noindent Nasz dokładny $x$ to $x = (1, ..., 1)^T$. Z jego pomocą będziemy obliczać błąd względny. Na nastęnych stronach zamieszczone zostają wartości zwracane przez funkcje \texttt{rank(A)} i \texttt{cond(A)} oraz policzone błędy względne dla obu metod.
-\newpage
+\noindent Nasz dokładny $x$ to $x = (1, ..., 1)^T$. Z jego pomocą będziemy obliczać błąd względny. Poniżej zamieszczone zostają wartości zwracane przez funkcje \texttt{rank(A)} i \texttt{cond(A)} oraz policzone błędy względne dla obu metod.
 \begin{verbatim}
 Macierz Hilberta
 
@@ -248,11 +249,11 @@ k    & $z_k$                & $|P(z_k)|$           & $|p(z_k)|$           & $|z_
 \end{tabular}
 
 \subsubsection*{Wnioski}
-Wyliczone miejsca zerowe są bardzo zbliżone do rzeczywistych miejsc zerowych. Jednak po podstawieniu ich z powrotem do wzoru otrzymujemy bardzo rozbieżne wyniki. Jak sama nazwa wskazuje miejsce zerowe to taki argument, dla którego funkcja osiąga wartość 0. Żadna z policzonych $P(z_k), p(z_k)$ nie jest nawet bliska 0. Otrzymujemy wartości od rzędu $10^4$ aż do $10^13$. Dzieje się tak, , ponieważ wielomian w postaci naturalnej przechowywany jest niedokładnie z uwagi na ograniczenia arytmetyki Float64. Niektóre współczynniki wielomianu przy niższych potęgach x są dużymi liczbami, których zapis pomija killka cyfr znaczących. Nie bez powodu wielomian jest nazwany złośliwym. Nawet bardzo małe oddalnie od precyzyjnej wartości miejsca zerowego, powoduje ogromne zaburzenia wyniku. Sugeruje to złe uwarunkowanie sposobu obliczania pierwiastków wielomianu.
+Wyliczone miejsca zerowe są bardzo zbliżone do rzeczywistych miejsc zerowych. Jednak po podstawieniu ich z powrotem do wzoru otrzymujemy bardzo rozbieżne wyniki. Jak sama nazwa wskazuje miejsce zerowe to taki argument, dla którego funkcja osiąga wartość 0. Żadna z policzonych $P(z_k), p(z_k)$ nie jest nawet bliska 0. Otrzymujemy wartości od rzędu $10^4$ aż do $10^13$. Dzieje się tak, ponieważ wielomian w postaci naturalnej przechowywany jest niedokładnie z uwagi na ograniczenia arytmetyki Float64. Niektóre współczynniki wielomianu przy niższych potęgach x są dużymi liczbami, których zapis pomija killka cyfr znaczących. Nie bez powodu wielomian jest nazwany złośliwym. Nawet bardzo małe oddalnie od precyzyjnej wartości miejsca zerowego, powoduje ogromne zaburzenia wyniku. Sugeruje to złe uwarunkowanie sposobu obliczania pierwiastków wielomianu.
  
 
 \subsection*{Podpunkt b}
-Celem eksperymentu Wilkinsona będącego tematem podpunktu b było zaburzenie jednego ze współczynników i obserwacja zachodzących zmian. Współczynnikiem, który uległ zmianie był $-210$. Teraz przyjmuje wartość $-210-2^{-23}$. 
+Celem eksperymentu Wilkinsona, będącego tematem podpunktu b, było zaburzenie jednego ze współczynników i obserwacja zachodzących zmian. Współczynnikiem, który uległ zmianie był $-210$. Teraz przyjmuje wartość $-210-2^{-23}$. 
 
 \noindent Analogiczna tabela jak w przykładzie powyżej tym razem dla wielomianu o zaburzonym współczynniku.\\
 
@@ -783,7 +784,46 @@ Iter | x
 \end{verbatim}
 \end{minipage}
 
+\begin{figure}[H]
+    \centering
+    
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot1_cobweb.png}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot2_cobweb.png}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot3_cobweb.png}
+    \end{subfigure}
+    
+    \vspace{8pt} %
+    
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot4_cobweb.png}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot5_cobweb.png}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot6_cobweb.png}
+    \end{subfigure}
 
+    \vspace{8pt} %
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{plot7_cobweb.png}
+    \end{subfigure}
+    
+    \caption{Reprezentacje iteracji graficznej rekurencji $x_{n+1}=x_n^2+c$}
+\end{figure}
+    
+\subsection*{Wnioski}
+Precyzja wykonywanych obliczeń zależy od przyjętych parametrów początkowych. Np. przyjęcie $x_0 = 1.0$ dla obydwu c daje w każdej iteracji dobry wynik. Tak samo $x_0 = 2.0$ dla $c = -1.0$ oraz $x_0 = 2.0$ dla $c = -2.0$. Natmoiast dla $x_0 = 0.75$ oraz $x_0 = 0.25$ i $c = -1.0$ wyniki stabilizują się dopiero po czasie (z czego dla $c = -1.0$ dzieje się to szybciej niż w drugim przypadku) Dla $x_0 = 1.99999999999999$ wynik zawsze jest inny (niestabilny). Oznacza to, że aby otrzymać wiarygodny i dokładny wynik należy niemałą uwagę poświęcić na wybór odpowiednich wartości parametrów.
 
+\noindent \\Czarne linie na wykresach reprezentują nam zbieganie do punktów stałych. Po uważnym prześledzeniu ich przebiegu dochodzimy do wniosku, że pokrywają się z danymi przedstawionymi w kolumnach nad wykresami. Tzn. np. dla $x = 1.0$ oraz $c = -2.0$ widzimy natychmaistową stablizację w punkcie -1.0. (Dla wszystkch iteracji otzrymujemy zawsze -1.0). Natmoiast dla $x = 1.99999999999999$ oraz $c = -2.0$ zauważamy ciągłe krążenie między wartościami $\approx 2$ a $\approx -2$ i brak jednego punktu stałego, co również zgadza się z wcześniej otrzymanymi danymi.
 
 \end{document}

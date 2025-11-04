@@ -1,6 +1,6 @@
 # Zofia Tarchalska
 
-
+# "normal" recurency, from 1 to 40
 function recurency(type)
     p = type(0.01)
     r = type(3.0)
@@ -12,6 +12,7 @@ function recurency(type)
     return p
 end
 
+# recurency with cut after 10th step
 function modified_recurency(type)
     p = type(0.01)
     r = type(3.0)

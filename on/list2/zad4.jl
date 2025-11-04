@@ -2,20 +2,18 @@
 
 using Polynomials
 
-
-
-#p = Polynomial([1, -3, 2])  # 1 - 3x + 2x^2
-#r = roots(p)
-
+# contents of file
 text = read("wielomian.txt", String)
 
+# coefficients of polynomial from file
 coefficients = parse.(Float64, split(text, ','))
 coefficients = reverse(coefficients)
 
-
+# polynomial with coefficients
 P_polynomial = Polynomial(coefficients)
 P_roots = roots(P_polynomial)
 
+# polynomial with brackets
 p(x) = (x-1)*(x-2)*(x-3)*(x-4)*(x-5)*(x-6)*(x-7)*(x-8)*(x-9)*(x-10)*(x-11)*(x-12)*(x-13)*(x-14)*(x-15)*(x-16)*(x-17)*(x-18)*(x-19)*(x-20)
 
 println(rpad("k", 4),
@@ -35,7 +33,7 @@ for k in 1:20
         " \\\\\\hline")
 end
 
-# Eksperyment ------------------------------------------
+# Experiment ------------------------------------------
 
 text2 = read("wielomian_eksperyment.txt", String)
 
@@ -45,7 +43,7 @@ coefficients2 = reverse(coefficients2)
 P_polynomial2 = Polynomial(coefficients2)
 P_roots2 = roots(P_polynomial2)
 
-println("\n----------Eksperyment----------\n")
+println("\n----------Experiment----------\n")
 println(rpad("k", 4),
         " & ", rpad("\$z_k\$", 20), 
         " & ", rpad("\$|P(z_k)|\$", 20), 
