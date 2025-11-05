@@ -1,0 +1,176 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+
+\title{Laboratorium 2 - sprawozdanie}
+\author{Zofia Tarchalska}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Zadanie 1}
+Optymalizacja dostaw paliwa
+
+\subsection*{1. Opis modelu}
+
+\textbf{Zmienna decyzyjna:}
+
+\begin{itemize}
+  \item $x_{s,a}$ - ilość jednostek paliwa dostarczona przez dostawcę $s$ na lotnisko $a$ [jednostki paliwa]
+\end{itemize}
+
+\noindent \textbf{Ograniczenia:}
+
+\begin{itemize}
+  \item Dostawca nie może dostarczyć więcej niż jego maksymalna dostępność:
+  
+
+\[
+\sum_{a \in A_s} x_{s,a} \leq \text{supply}_s \quad \forall s \in S
+\]
+
+gdzie $S$ to zbiór wszystkich dostawców
+
+
+\item Każde lotnisko musi otrzymać dokładnie tyle paliwa, ile potrzebuje:
+  
+
+\[
+\sum_{s \in S_a} x_{s,a} = \text{demand}_a \quad \forall a \in A
+\]
+
+gdzie $A$ to zbiór wszystkich lotnisk
+
+\item Dostawy są możliwe tylko dla dozwolonych par $(s,a)$.
+\end{itemize}
+
+\noindent \textbf{Funkcja celu:}
+
+\[
+\min \sum_{(s,a) \in D} c_{s,a} \cdot x_{s,a}
+\]
+
+gdzie:
+\begin{itemize}
+  \item $c_{s,a}$ - koszt jednostkowy zakupu i dostawy paliwa od dostawcy $s$ na lotnisko $a$ [zł/jednostkę]
+  \item $D$ - zbiór dozwolonych par dostawca - lotnisko
+\end{itemize}
+
+\subsection*{2. Opis danych i wyników}
+
+Dane wejściowe zostały wczytane z pliku \texttt{data\_ex1.json}. Uwzględniono:
+\begin{itemize}
+  \item 3 dostawców paliwa o dostępności: 275000, 550000, 660000 jednostek
+  \item 4 lotniska o zapotrzebowaniu: 110000, 220000, 330000, 440000 jednostek
+  \item Koszty dostawy zależne od pary dostawca - lotnisko
+\end{itemize}
+
+\noindent Model został rozwiązany za pomocą solvera GLPK. Uzyskano wyniki:
+\begin{verbatim}
+Min cost: 8.525e6
+
+Company F1, limit = 275000
+Supplier F1 → Airport L1: 0.0
+Supplier F1 → Airport L2: 165000.0
+Supplier F1 → Airport L3: 0.0
+Supplier F1 → Airport L4: 110000.0
+
+F1 delivered 275000.0 in total.
+
+Company F2, limit = 550000
+Supplier F2 → Airport L1: 110000.0
+Supplier F2 → Airport L2: 55000.0
+Supplier F2 → Airport L3: 0.0
+Supplier F2 → Airport L4: 0.0
+
+F2 delivered 165000.0 in total.
+
+Company F3, limit = 660000
+Supplier F3 → Airport L1: 0.0
+Supplier F3 → Airport L2: 0.0
+Supplier F3 → Airport L3: 330000.0
+Supplier F3 → Airport L4: 330000.0
+
+F3 delivered 660000.0 in total.
+\end{verbatim}
+
+\subsection*{Wnioski}
+Okazuje się że minimalny koszt wynosi $8 525 000$. Optymalny plan dostaw wskazuje, ile jednostek paliwa należy zakupić od każdego dostawcy i dostarczyć na każde lotnisko, aby spełnić zapotrzebowanie przy minimalnym koszcie. Wyniki są zgodne z ograniczeniami dostępności. Zauważmy, że nie wszytskie firmy muszą dostarczyć paliwo, aby otrzymać optymalne rozwiązanie. Jednak aż dwie firmy F1 i F3 wyczerpały możliwości dostaw (wysłały wszystko co mogły).
+\newpage
+\section{Zadanie 2}
+Optymalizacja produkcji w fabryce
+\subsection*{1. Opis modelu}
+
+\begin{itemize}
+  \item \textbf{Zmienna decyzyjna:}
+
+  $x_p$ – Liczba kilogramów produktu $p \in P$ wyprodukowana w danym tygodniu [kg]
+
+  \item \textbf{Ograniczenia:}
+
+  \begin{itemize}
+    \item Ograniczenia czasowe dla każdej maszyny $m \in M$:
+    
+
+\[
+    \sum_{p \in P} t_{p,m} \cdot x_p \leq T_m \quad \forall m \in M
+    \]
+
+
+    gdzie:
+    \begin{itemize}
+      \item $t_{p,m}$ – liczba godzin pracy maszyny $m$ potrzebna do wyprodukowania 1 kg produktu $p$
+      \item $T_m$ – maksymalna liczba godzin pracy maszyny $m$ w tygodniu
+    \end{itemize}
+
+    \item Ograniczenia popytu dla każdego produktu $p \in P$:
+    
+
+\[
+    x_p \leq D_p \quad \forall p \in P
+    \]
+
+
+    gdzie:
+    \begin{itemize}
+      \item $D_p$ – maksymalny tygodniowy popyt na produkt $p$
+    \end{itemize}
+  \end{itemize}
+
+  \item \textbf{Funkcja celu:}
+
+  
+
+\[
+  \max \sum_{p \in P} \left( r_p - c_p - \sum_{m \in M} w_m \cdot t_{p,m} \right) \cdot x_p
+  \]
+
+
+
+  gdzie:
+  \begin{itemize}
+    \item $r_p$ – cena sprzedaży 1 kg produktu $p$ [zł/kg]
+    \item $c_p$ – koszt materiałowy produkcji 1 kg produktu $p$ [zł/kg]
+    \item $w_m$ – koszt pracy maszyny $m$ [zł/godz.]
+    \item $t_{p,m}$ – liczba godzin pracy maszyny $m$ na 1 kg produktu $p$
+  \end{itemize}
+\end{itemize}
+
+\noindent Wynik działania solvera:\\
+\begin{verbatim}
+Optimal production strategy:
+Product P1: 125.0 kg
+Product P2: 100.0 kg
+Product P3: 150.0 kg
+Product P4: 500.0 kg
+
+Max profit: 3632.5 zł
+\end{verbatim}
+
+\subsection*{Wnioski}
+Model określa optymalną ilość produkcji każdego z produktów, uwzględniając ograniczenia czasowe maszyn oraz maksymalny popyt. Funkcja celu maksymalizuje zysk, który uwzględnia przychód ze sprzedaży, koszt materiałowy oraz koszt pracy maszyn. Okazuje sie, że wszystkie produkty oprócz $P1$ należy wyprodukować w liczbie równej maksymalnemu popytowi. Najwyższy możliwy zysk to 3632.5 zł.
+\end{document}
