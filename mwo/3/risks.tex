@@ -1,0 +1,40 @@
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb}
+
+\title{Analiza ryzyk projektowych, strategii zarządzania nimi oraz przewisywane plany naprawcze}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Wstęp}
+W ramach realizacji projektu Drone Light Show Simulator, którego celem jest stworzenie kompleksowego środowiska do symulacji pokazów świetlnych z użyciem dronów, zidentyfikowano szereg potencjalnych ryzyk mogących wpłynąć na przebieg prac, jakość produktu końcowego oraz terminowość dostarczenia rozwiązania. Poniżej przedstawiono najważniejsze zagrożenia wraz z metodami ich zapobiegania oraz planami naprawczymi.
+
+\section{Ryzyka i plany naprawcze}
+
+\subsection{Ryzyko opóźnień w integracji silnika fizyki JOLT z Godot}
+Jednym z kluczowych elementów projektu jest integracja silnika fizyki JOLT z silnikiem Godot, co ma umożliwić realistyczną symulację ruchu dronów. Proces ten może okazać się technicznie skomplikowany, zwłaszcza ze względu na różnice w architekturze obu narzędzi. Aby zminimalizować to ryzyko, zaplanowano wczesne prototypowanie oraz dokładne zapoznanie się z dokumentacją obu silników. W przypadku wystąpienia trudności, planem naprawczym jest tymczasowe przejście na uproszczony model fizyki lub rozważenie alternatywnego silnika, który oferuje lepszą kompatybilność z Godot.
+
+\subsection{Ryzyko niskiej wydajności symulacji przy dużej liczbie dronów}
+Symulacja wielu dronów jednocześnie może prowadzić do przeciążenia systemu, zwłaszcza w kontekście renderowania i obliczeń fizycznych. Aby temu zapobiec, przewidziano testy obciążeniowe oraz optymalizację kodu w języku C++, który odpowiada za najbardziej wymagające obliczenia. W przypadku wystąpienia problemów z wydajnością, możliwe będzie ograniczenie liczby dronów w wersji demonstracyjnej oraz zastosowanie technik cache’owania wyników symulacji.
+
+\subsection{Ryzyko błędów w synchronizacji dronów}
+Złożone algorytmy synchronizacji mogą prowadzić do nieprzewidywalnych zachowań dronów w symulacji, co wpłynie negatywnie na realizm pokazów. Aby temu przeciwdziałać, wdrożone zostaną testy jednostkowe oraz symulacje przypadków brzegowych. W razie wykrycia błędów, planem naprawczym będzie debugowanie logiki synchronizacji oraz tymczasowe zastosowanie prostszych algorytmów, które zapewnią stabilność działania.
+
+\subsection{Ryzyko problemów z formatem SEX}
+Format SEX (Spatial Explorable Xenochrony) jest autorskim rozwiązaniem do reprezentacji ścieżek lotu dronów. Jego nowość i brak kompatybilności z istniejącymi standardami mogą stanowić wyzwanie. Aby temu zapobiec, przewidziano szczegółową dokumentację formatu oraz testy konwersji z popularnych formatów danych. W przypadku trudności, możliwe będzie dodanie wsparcia dla alternatywnych formatów takich jak JSON czy CSV, co zapewni większą elastyczność systemu.
+
+\subsection{Ryzyko braku kompatybilności z przyszłym sprzętem dronowym}
+Projekt zakłada przyszłą integrację z fizycznymi dronami, co niesie ryzyko niezgodności z przyszłymi wersjami sprzętu lub zmianami w API. Aby temu zapobiec, architektura systemu została zaprojektowana w sposób modularny, z wyraźną separacją warstwy sprzętowej. W razie potrzeby możliwa będzie refaktoryzacja modułu komunikacji oraz zastosowanie adapterów sprzętowych, które umożliwią współpracę z różnymi typami urządzeń.
+
+\subsection{Ryzyko niskiej jakości renderowania 3D}
+Wizualna jakość symulacji ma kluczowe znaczenie dla odbioru projektu, zwłaszcza w kontekście prezentacji pokazów świetlnych. Istnieje ryzyko, że renderowanie w czasie rzeczywistym nie spełni oczekiwań estetycznych. Aby temu zapobiec, zaplanowano wykorzystanie narzędzia Blender do tworzenia wysokiej jakości modeli oraz testy na różnych konfiguracjach sprzętowych. W przypadku problemów, możliwa będzie optymalizacja pipeline’u renderowania lub zastosowanie uproszczonych modeli graficznych.
+
+\section{Podsumowanie}
+Zarządzanie ryzykiem stanowi integralny element procesu projektowego. Dzięki wczesnej identyfikacji zagrożeń oraz opracowaniu konkretnych strategii zapobiegania i planów naprawczych, zespół projektowy może skutecznie minimalizować wpływ nieprzewidzianych zdarzeń na realizację celów. Podejście to zwiększa szanse na terminowe dostarczenie funkcjonalnego i estetycznego rozwiązania, które spełni oczekiwania użytkowników oraz będzie gotowe do dalszego rozwoju w kierunku integracji z rzeczywistym sprzętem dronowym.
+
+\end{document}

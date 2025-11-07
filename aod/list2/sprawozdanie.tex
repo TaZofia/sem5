@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[polish]{babel}
 \usepackage{amsmath}
+\usepackage{booktabs}
 
 \title{Laboratorium 2 - sprawozdanie}
 \author{Zofia Tarchalska}
@@ -106,58 +107,50 @@ Optymalizacja produkcji w fabryce
 \subsection*{1. Opis modelu}
 
 \begin{itemize}
-  \item \textbf{Zmienna decyzyjna:}
+\item \textbf{Zmienna decyzyjna:}
 
-  $x_p$ – Liczba kilogramów produktu $p \in P$ wyprodukowana w danym tygodniu [kg]
+$x_p$ – Liczba kilogramów produktu $p \in P$ wyprodukowana w danym tygodniu [kg]
 
-  \item \textbf{Ograniczenia:}
+\item \textbf{Ograniczenia:}
 
-  \begin{itemize}
-    \item Ograniczenia czasowe dla każdej maszyny $m \in M$:
-    
-
-\[
-    \sum_{p \in P} t_{p,m} \cdot x_p \leq T_m \quad \forall m \in M
-    \]
-
-
-    gdzie:
-    \begin{itemize}
-      \item $t_{p,m}$ – liczba godzin pracy maszyny $m$ potrzebna do wyprodukowania 1 kg produktu $p$
-      \item $T_m$ – maksymalna liczba godzin pracy maszyny $m$ w tygodniu
-    \end{itemize}
-
-    \item Ograniczenia popytu dla każdego produktu $p \in P$:
-    
+\begin{itemize}
+\item Ograniczenia czasowe dla każdej maszyny $m \in M$:
 
 \[
-    x_p \leq D_p \quad \forall p \in P
-    \]
+\sum_{p \in P} t_{p,m} \cdot x_p \leq T_m \quad \forall m \in M
+\]
 
+gdzie:
+\begin{itemize}
+  \item $t_{p,m}$ – liczba godzin pracy maszyny $m$ potrzebna do wyprodukowania 1 kg produktu $p$
+  \item $T_m$ – maksymalna liczba godzin pracy maszyny $m$ w tygodniu
+\end{itemize}
 
-    gdzie:
-    \begin{itemize}
-      \item $D_p$ – maksymalny tygodniowy popyt na produkt $p$
-    \end{itemize}
-  \end{itemize}
-
-  \item \textbf{Funkcja celu:}
-
-  
+\item Ograniczenia popytu dla każdego produktu $p \in P$:
 
 \[
-  \max \sum_{p \in P} \left( r_p - c_p - \sum_{m \in M} w_m \cdot t_{p,m} \right) \cdot x_p
-  \]
+x_p \leq D_p \quad \forall p \in P
+\]
 
+gdzie:
+\begin{itemize}
+  \item $D_p$ – maksymalny tygodniowy popyt na produkt $p$
+\end{itemize}
+\end{itemize}
 
+\item \textbf{Funkcja celu:}
 
-  gdzie:
-  \begin{itemize}
-    \item $r_p$ – cena sprzedaży 1 kg produktu $p$ [zł/kg]
-    \item $c_p$ – koszt materiałowy produkcji 1 kg produktu $p$ [zł/kg]
-    \item $w_m$ – koszt pracy maszyny $m$ [zł/godz.]
-    \item $t_{p,m}$ – liczba godzin pracy maszyny $m$ na 1 kg produktu $p$
-  \end{itemize}
+\[
+\max \sum_{p \in P} \left( r_p - c_p - \sum_{m \in M} w_m \cdot t_{p,m} \right) \cdot x_p
+\]
+
+gdzie:
+\begin{itemize}
+  \item $r_p$ – cena sprzedaży 1 kg produktu $p$ [zł/kg]
+  \item $c_p$ – koszt materiałowy produkcji 1 kg produktu $p$ [zł/kg]
+  \item $w_m$ – koszt pracy maszyny $m$ [zł/godz.]
+  \item $t_{p,m}$ – liczba godzin pracy maszyny $m$ na 1 kg produktu $p$
+\end{itemize}
 \end{itemize}
 
 \noindent Wynik działania solvera:\\
@@ -173,4 +166,169 @@ Max profit: 3632.5 zł
 
 \subsection*{Wnioski}
 Model określa optymalną ilość produkcji każdego z produktów, uwzględniając ograniczenia czasowe maszyn oraz maksymalny popyt. Funkcja celu maksymalizuje zysk, który uwzględnia przychód ze sprzedaży, koszt materiałowy oraz koszt pracy maszyn. Okazuje sie, że wszystkie produkty oprócz $P1$ należy wyprodukować w liczbie równej maksymalnemu popytowi. Najwyższy możliwy zysk to 3632.5 zł.
+
+
+\section{Zadanie 3}
+
+\subsection{Opis modelu}
+
+\subsubsection*{(a) Zmienne decyzyjne}
+
+\begin{itemize}
+    \item $x\_normal_j$ – liczba jednostek wyprodukowanych w okresie $j$ w trybie normalnym [jednostki]
+    \item $x\_extra_j$ – liczba jednostek wyprodukowanych w okresie $j$ w trybie ponadwymiarowym [jednostki]
+    \item $x\_stored_j$ – liczba jednostek magazynowanych po okresie $j$ [jednostki]
+\end{itemize}
+
+\subsubsection*{(b) Ograniczenia}
+
+\begin{itemize}
+\item Produkcja normalna w każdym okresie nie może przekroczyć 100 jednostek:
+
+\[
+x\_normal_j \leq 100
+\]
+
+\item Produkcja ponadwymiarowa w każdym okresie nie może przekroczyć limitu $a_j$:
+
+\[
+  x\_extra_j \leq a_j
+\]
+
+\item Liczba jednostek magazynowanych po każdym okresie nie może przekroczyć 70:
+\[
+  x\_stored_j \leq 70
+\]
+\item Bilans zapasów w każdym okresie musi spełniać:
+\[
+x\_normal_j + x\_extra_j + x\_stored_{j-1} = d_j + x\_stored_j
+\]
+gdzie $s_0 = 15$ to początkowy stan magazynu, a $d_j$ to zapotrzebowaniew danym okresie
+\end{itemize}
+
+\subsubsection*{(c) Funkcja celu}
+
+\[
+\min \sum_{j=1}^{4} \left( c_j \cdot x\_normal_j + o_j \cdot x\_extra_j + s_{cost} \cdot x\_stored_j \right)
+\]
+
+gdzie:
+\begin{itemize}
+    \item $c_j$ – koszt jednostkowy produkcji normalnej w okresie $j$ [zł]
+    \item $o_j$ – koszt jednostkowy produkcji ponadwymiarowej w okresie $j$ [zł]
+    \item $s_{cost}$ – koszt magazynowania jednej jednostki przez jeden okres [zł]
+\end{itemize}
+
+\subsection{Opis danych i interpretacja wyników}
+
+Rozważany przypadek obejmuje 4 kolejne okresy produkcyjne. W każdym okresie firma może wyprodukować do 100 jednostek w trybie normalnym oraz dodatkowe jednostki w trybie ponadwymiarowym (zgodnie z limitem $a_j$). Popyt $d_j$ oraz koszty $c_j$, $o_j$ są znane dla każdego okresu. Firma może magazynować do 70 jednostek między okresami, przy początkowym stanie magazynu równym 15 jednostek.
+
+\subsubsection*{Uzyskany plan produkcji}
+
+\begin{verbatim}
+Production plan: 
+
+Period J1:
+normal production = 100.0
+additional_production = 15.0
+stored= 0.0
+
+Period J2:
+normal production = 100.0
+additional_production = 50.0
+stored= 70.0
+
+Period J3:
+normal production = 100.0
+additional_production = 0.0
+stored= 45.0
+
+Period J4:
+normal production = 100.0
+additional_production = 50.0
+stored= 0.0
+
+Min cost: 3.8425e6
+\end{verbatim}
+
+\subsection{Wnioski}
+
+\begin{itemize}
+    \item Minimalny łączny koszt produkcji i magazynowania wynosi 3\,842\,500 zł.
+    \item Produkcja ponadwymiarowa została zaplanowana w okresach J1, J2 oraz J4.
+    \item Magazyn osiągnął maksymalną pojemność (70 jednostek) w okresie J2.
+\end{itemize}
+
+
+\section{Zadanie 5}
+Optymalny przydział radiowozów
+
+\subsection{ Opis modelu}
+
+\begin{itemize}
+    \item $x_{ij}$ – liczba radiowozów przypisana do dzielnicy $i$ podczas zmiany $j$ [szt.]
+\end{itemize}
+
+\subsubsection*{Ograniczenia}
+
+\begin{itemize}
+  \item Dla każdej dzielnicy $i$ i zmiany $j$:
+      
+  \[
+    \text{min}_{ij} \leq x_{ij} \leq \text{max}_{ij}
+  \]
+
+
+  \item Dla każdej zmiany $j$:
+      
+  \[
+    \sum_{i} x_{ij} \geq r_j
+  \]
+
+  \item Dla każdej dzielnicy $i$:
+
+  \[
+    \sum_{j} x_{ij} \geq d_i
+  \]
+
+\end{itemize}
+
+\subsubsection*{Funkcja celu}
+
+\[
+\min \sum_{i,j} x_{ij}
+\]
+
+\noindent czyli minimalizacja całkowitej liczby radiowozów.
+
+\vspace{1em}
+\subsection{Wyniki i interpretacja}
+
+\begin{verbatim}
+District p1
+Shift s1: 2.0
+Shift s2: 7.0
+Shift s3: 5.0
+
+District p2
+Shift s1: 3.0
+Shift s2: 6.0
+Shift s3: 7.0
+
+District p3
+Shift s1: 5.0
+Shift s2: 7.0
+Shift s3: 6.0
+
+Min number of vehicles: 48.0
+\end{verbatim}
+
+
+\subsection{Wnioski}
+\begin{itemize}
+    \item Łączna liczba radiowozów: 48
+    \item Wszystkie wymagania dotyczące minimalnych i maksymalnych przydziałów zostały spełnione.
+    \item Przydział jest efektywny i zgodny z przepisami dla każdej zmiany i dzielnicy.
+\end{itemize}
+
 \end{document}

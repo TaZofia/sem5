@@ -1,0 +1,32 @@
+{
+    "periods": ["J1", "J2", "J3", "J4"],
+    "max_number_of_units": {
+        "J1": 100,
+        "J2": 100,
+        "J3": 100,
+        "J4": 100
+    },
+    "unit_production_cost": {
+        "J1": 6000,
+        "J2": 4000,
+        "J3": 8000,
+        "J4": 9000
+    },
+    "additional_production": {
+        "J1": { "limit": 60, "cost": 8000 },
+        "J2": { "limit": 65, "cost": 6000 },
+        "J3": { "limit": 70, "cost": 10000 },
+        "J4": { "limit": 60, "cost": 11000 }
+    },
+    "demand": {
+        "J1": 130,
+        "J2": 80,
+        "J3": 125,
+        "J4": 195
+    },
+    "storage": {
+        "max_capacity": 70,
+        "unit_cost": 1500,
+        "initial_stock": 15
+    }
+}
