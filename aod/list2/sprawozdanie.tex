@@ -259,6 +259,96 @@ Min cost: 3.8425e6
     \item Magazyn osiągnął maksymalną pojemność (70 jednostek) w okresie J2.
 \end{itemize}
 
+\section{Zadanie 4}
+
+\subsection{Opis problemu}
+
+Dany jest skierowany graf $G = (N, A)$, gdzie $N$ to zbiór miast (wierzchołków), a $A$ to zbiór połączeń (łuków). Każda krawędź $(i,j) \in A$ posiada koszt przejazdu $c_{ij}$ oraz czas przejazdu $t_{ij}$. Celem jest znalezienie ścieżki z miasta początkowego $i^\circ$ do miasta końcowego $j^\circ$, której całkowity koszt jest minimalny, a całkowity czas przejazdu nie przekracza zadanego limitu $T$.
+
+\subsection{Model matematyczny}
+
+\textbf{Zmienne decyzyjne:}
+
+
+\[
+x_{ij} \in \{0,1\} \quad \text{dla każdej } (i,j) \in A
+\]
+
+
+$x_{ij} = 1$ oznacza, że krawędź $(i,j)$ należy do wybranej ścieżki.
+
+\noindent \textbf{Funkcja celu:}
+
+
+\[
+\min \sum_{(i,j) \in A} c_{ij} \cdot x_{ij}
+\]
+
+
+
+\noindent \textbf{Ograniczenie czasu:}
+
+
+\[
+\sum_{(i,j) \in A} t_{ij} \cdot x_{ij} \leq T
+\]
+
+
+
+\noindent \textbf{Ograniczenia przepływu:}
+
+
+\[
+\sum_{i: (i,v) \in A} x_{iv} - \sum_{j: (v,j) \in A} x_{vj} =
+\begin{cases}
+-1 & \text{jeśli } v = i^\circ \\
+1 & \text{jeśli } v = j^\circ \\
+0 & \text{w przeciwnym razie}
+\end{cases}
+\]
+
+\subsection{Parametry instancji}
+
+\begin{itemize}
+    \item Liczba miast: $|N| = 10$
+    \item Miasto początkowe: $i^\circ = 1$
+    \item Miasto końcowe: $j^\circ = 10$
+    \item Limit czasu: $T = 15$
+\end{itemize}
+
+\subsection{Wyniki - zadanie z polecenia}
+
+\begin{verbatim}
+Optimal path found:
+Total cost: 13.0
+Total time: 15.0
+Edges in the path:
+1 → 2 (cost: 3, time: 4)
+2 → 3 (cost: 2, time: 3)
+3 → 5 (cost: 2, time: 2)
+5 → 7 (cost: 3, time: 3)
+7 → 9 (cost: 1, time: 1)
+9 → 10 (cost: 2, time: 2)
+\end{verbatim}
+
+\subsection{Wyniki - mój przykład}
+\begin{verbatim}
+Optimal path found:
+Total cost: 4.0
+Total time: 15.0
+Edges in the path:
+1 → 2 (cost: 1, time: 5)
+2 → 9 (cost: 2, time: 5)
+9 → 10 (cost: 1, time: 5)
+\end{verbatim}
+
+\subsection{Wnioski}
+
+Model skutecznie znajduje najtańszą ścieżkę spełniającą ograniczenie czasowe.
+
+\noindent \\Ograniczenie na całkowitoliczbowość zmiennej decyzyjnej w tym przykładzie jest koniecze. W moim problemie zmienną decyzyjną jest zmienna binarna, w zależności czy dołączamy krawędź do rozwiązania czy nie, przyjmuje wartości 1 lub 0. Dopuszczenie zmiennych niecałkowitych byłoby kompletnie sprzeczne z logiką programu. Mogłyby nam wyjść wartości ułamkowe a nie da się tego interpretować w przypadku ścieżek w grafie lub jako watość true/false.
+
+\noindent \\Jeśli chodzi o przypadek, w którym usunęlibyśmy ograniczenie na całkowitoliczbowość zmiennej decyzyjnej oraz na czasy przejazdu to właśnie ze względu na brak ograniczenia całkowitoliczbowości nie otrzymamy zawsze akceptowalnego rozwiązania.
 
 \section{Zadanie 5}
 Optymalny przydział radiowozów
@@ -330,5 +420,83 @@ Min number of vehicles: 48.0
     \item Wszystkie wymagania dotyczące minimalnych i maksymalnych przydziałów zostały spełnione.
     \item Przydział jest efektywny i zgodny z przepisami dla każdej zmiany i dzielnicy.
 \end{itemize}
+
+
+\section{Zadanie 6}
+Optymalne rozmieszczenie kamer
+
+\subsection{Opis problemu}
+
+Firma przeładunkowa składuje kontenery z cennym ładunkiem na siatce o wymiarach $m \times n$. Każdy kontener zajmuje dokładnie jeden kwadrat. Celem jest rozmieszczenie kamer w pustych kwadratach tak, aby każdy kontener był monitorowany przez co najmniej jedną kamerę, a liczba użytych kamer była minimalna.
+
+\noindent Zasięg kamery obejmuje $k$ pól w górę, dół, lewo i prawo (czyli w formie krzyża). Kamera nie może być umieszczona w polu zajętym przez kontener.
+
+\subsection{Zmienne decyzyjne}
+
+\begin{itemize}
+    \item $c_{ij} \in \{0,1\}$ – czy kamera znajduje się w komórce $(i,j)$
+    \item $K$ – zbiór współrzędnych kontenerów
+\end{itemize}
+
+\subsection{Ograniczenia}
+
+\begin{itemize}
+  \item Kamera nie może być umieszczona na kontenerze:
+    
+  \[
+    c_{ij} = 0 \quad \forall (i,j) \in K
+  \]
+
+ \item Każdy kontener musi być monitorowany przez co najmniej jedną kamerę w zasięgu:  
+
+  \[
+    \sum_{(p,q) \in \text{krzyż}(i,j)} c_{pq} \geq 1 \quad \forall (i,j) \in K
+  \]
+
+    gdzie $\text{krzyż}(i,j)$ to zbiór pól w zasięgu $k$ od kontenera $(i,j)$ w pionie i poziomie.
+\end{itemize}
+
+\subsection{Funkcja celu}
+
+\[
+\min \sum_{i=1}^{m} \sum_{j=1}^{n} c_{ij}
+\]
+
+
+\noindent czyli minimalizacja liczby użytych kamer.
+\subsection{Wyniki dla siatki $6 \times 6$}
+\begin{verbatim}
+X - represents camera
+O - represents container
+. - represents empty cell
+
+
+k = 1
+Min number of cameras: 3.0
+
+Map:
+ .  .  .  .  .  . 
+ .  O  .  .  .  .
+ .  X  O  O  X  O
+ .  .  .  .  O  .
+ .  .  .  X  O  .
+ .  .  .  .  .  .
+
+
+k = 2
+Min number of cameras: 2.0
+
+Map:
+ .  .  .  .  .  .
+ X  O  .  .  .  .
+ .  .  O  O  X  O
+ .  .  .  .  O  .
+ .  .  .  .  O  .
+ .  .  .  .  .  .
+\end{verbatim}
+
+\subsection*{6. Wnioski}
+
+Zwiększenie zasięgu kamery ($k$) pozwala na zmniejszenie liczby potrzebnych urządzeń. Dla $k=2$ wystarczyło 2 kamery zamiast 3 (dla $k=1$), co pokazuje korzyści z większego pola widzenia. Wszystkie kontenery zostały skutecznie objęte monitoringiem.
 
 \end{document}

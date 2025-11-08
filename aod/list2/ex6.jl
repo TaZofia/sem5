@@ -64,21 +64,23 @@ function result()
     m = data["m"]
     n = data["n"]
     containers = data["containers"]
+    containers = Set([(c[1], c[2]) for c in data["containers"]])
+
     k_values = data["k_values"]
+
+    println("X - represents camera")
+    println("O - represents container")
+    println(". - represents empty cell")
 
     for k in k_values
         optimized_model, cameras_map = my_solver(m, n, k, containers)
 
-        println("X - represents camera")
-        println("O - represents container")
-        println(". - represents empty cell")
-
-        println("k = $k")
+        println("\n\nk = $k")
         println("Min number of cameras: ", objective_value(optimized_model))
 
         println("\nMap:")
-        for i in 1:m
-            for j in 1:n
+        for i in 1:n
+            for j in 1:m
                 if (i, j) in containers
                     print(" O ")
                 elseif value(cameras_map[i, j]) == 1.0
