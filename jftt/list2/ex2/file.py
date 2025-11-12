@@ -7,7 +7,7 @@ def calculator():
 
     choice = input("Enter choice (1/2): ")        # choice you can make
 
-    a = float(input("Enter first number: "))
+    a = float(input("Enter \"first\" number: "))
     b = float(input("Enter second number: "))
 
     '''

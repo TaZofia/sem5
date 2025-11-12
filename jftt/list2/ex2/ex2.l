@@ -14,6 +14,8 @@
 <STR_DOUBLE>\"      { ECHO; BEGIN(INITIAL); }  /* end "..." */
 
 <STR_SINGLE>.       { ECHO; }                  /* any sign in string */
+<STR_SINGLE>\\\"    { ECHO; }    
+<STR_DOUBLE>\\\"    { ECHO; }
 <STR_DOUBLE>.       { ECHO; }
 
 <STR_TRIPLE_DQ>\"\"\"  { BEGIN(INITIAL); }        
