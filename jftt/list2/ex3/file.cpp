@@ -9,7 +9,7 @@ int main() {
     string name;/*kot*/string kot;
     cout << "Enter your name: ";
     /*
-    multi 
+    multi "
     line //comment
     */
 
