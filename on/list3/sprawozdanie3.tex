@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+
+\setlength{\parindent}{0pt}
+
+\title{Sprawozdanie laboratorium lista 3 - obliczenia naukowe}
+\author{\normalsize Zofia Tarchalska, indeks: 279699}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Zadania 1-3}
+Celem zadań jest oprogramowanie funkcji, które będą obliczały miejsca zerowe na 3 różne sposoby. Należało umieścić je w jednym module. Funkcje zwracają:
+\begin{itemize}
+    \item r - przybliżenie pierwiastka funkcji,
+    \item v - wartość f(r),
+    \item it - liczba wykonanych operacji,
+    \item err - sygnalizacja błędu, różne wartości dla różnych błędów w zależności od zadania i specyficznych ograniczeń każdej z funkcji.
+\end{itemize}
+
+\subsection{Zadanie 1}
+Zaimplementowanie funckji rozwiązującej $f(x)=0$ metodą bisekcji. Wymaga ona aby:
+\begin{itemize}
+    \item funckja $f$ była ciągła na przedziale $[a, b]$, w którym szukamy miejsca zerowego,
+    \item oraz żeby miała różne znaki wartości na końcach przedziału, czyli $f(a) \cdot f(b) < 0$.
+\end{itemize}
+
+Argumenty funckji:
+\begin{itemize}
+    \item $f(x)$ - funkcja
+    \item $a$, $b$ - początek i koniec przedziału początkowego,
+    \item $\delta$ - dokładność w argumentach,
+    \item $\epsilon$ - dokładność w wartościach funkcji.
+\end{itemize}
+
+\subsubsection*{Sposób działania}
+Konsekwentnie dzielimy przedział na pół. Jeśli trafimy na wartość równą 0 - znaleźliśmy rozwiązanie. W przeciwnym razie wybieramy podprzedział, w którym wartości funkcji na krańcach mają przeciwne znaki.
+
+\subsection{Zadanie 2}
+W tym zadaniu zaimplementowana funkcja wylicza miejsca zerowe metodą Newtona. Funkcja musi spełniać poniższe wymagania:
+\begin{itemize}
+    \item jest określona,
+    \item jest ciągła,
+    \item pierwsza pochodna $f'(x)$ jest różna od zera. 
+\end{itemize}
+
+Argumenty funkcji:
+\begin{itemize}
+    \item $f(x)$ i $f'(x)$, czyli funkcja oraz jej pochodna,
+    \item $x_0$ - przybliżenie początkowe,
+    \item $\delta$, $\epsilon$ - dokładności obliczeń, tak samo jak zdefiniowane powyżej,
+    \item maxit - maksymalna dopuszczalna liczba operacji.
+\end{itemize}
+
+\subsubsection*{Sposób działania}
+Jest to metoda iteracyjna. Zaczynamy od przybliżenia początkowego $x_0$ i w każdej iteracji zastępujemy funkcję jej styczną w punkcie $x_i$, wyznaczając przecięcie tej stycznej z osią OX jako nowe przybliżenie $x_{1+1}$.
+
+\subsection{Zadanie 3}
+W tym zadaniu, do obliczenia miejsc zerowych funkcji, należy posłużyć się metodą siecznych. Funkcja musi spełniać poniższe warunki:
+\begin{itemize}
+    \item jest ciągła,
+    \item $f(a) \cdot f(b) < 0$
+    \item pierwsza pochodna $f'(x)$ jest różna od zera. Nie istnieje zatem minimum lub maksimum lokalne. Ten warunek gwarantuje nam, iż sieczna nie będzie równoległa do osi OX, co uniemożliwiłoby wyznaczenie jej punktu przecięcia z tą osią.
+\end{itemize}
+
+Jako argumenty funkcji podane są:
+\begin{itemize}
+    \item $f$ - funkcja,
+    \item $x_0$, $x_1$ - przybliżenia krańców przedziału, w którym na pewno znajduje się miejsce zerowe,
+    \item $\delta$, $\epsilon$ - dokładności obliczeń, tak samo jak zdefiniowane w zadaniu 1,
+    \item maxit - maksymalna dopuszczalna liczba iteracji
+\end{itemize} 
+
+\subsubsection*{Sposób działania}
+Jest to metoda iteracyjna, która przybliża krzywą funkcji na każdym kroku sieczną przechodzącą przez dwa ostatnie przybliżenia i przyjmuje przecięcie tej siecznej z osią OX jako nowe przybliżenie. Działa podobnie jak w zadaniu drugim tylko tutaj pomijamy potrzebę używania jawnego wzoru na pochodną.
+
+Oto wzór:
+\[
+    x_i = x_{i-1} - f(x_{i-1}) \cdot \frac{x_{i-1} - x_{i-2}}{f(x_{i-1}) - f(x_{i-2})}
+\]
+
+
+
+
+
+
+
+
+
+\end{document}

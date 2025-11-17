@@ -5,55 +5,68 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath, amssymb}
 
-\title{\normalsize Dowód nieregularności języka $L = \{ ww^R : w \in \{0,1\}^+, w \neq \varepsilon \}$}
-\author{\normalsize Zofia Tarchalska}
+\title{\normalsize Określenie regularności języka $L = \{ ww^R : w \in \{0,1\}^+, w \neq \varepsilon \}$}
+\author{\normalsize Zofia Tarchalska, indeks: 279699}
 \date{}
 
 \begin{document}
 \maketitle
 
-\noindent Rozważamy język:
-\[
-L = \{ ww^R : w \in \{0,1\}^+, w \neq \varepsilon \},
-\]
-gdzie $w^R$ oznacza słowo $w$ zapisane w odwrotnej kolejności.
 
-\section*{Twierdzenie}
-Język $L$ nie jest regularny.
+\section{Treść zadania}
+Rozważmy język
 
-\section*{Dowód}
-Załóżmy nie wprost, że $L$ jest regularny. Wtedy spełnia lemat o pompowaniu dla języków regularnych. Niech $p$ będzie długością pompowania wynikającą z lematu o pompowaniu.
 
-\noindent Weźmy słowo:
 \[
-s = 0^p 1 1 0^p,
-\]
-które należy do $L$, ponieważ można je zapisać jako $s = w w^R$ dla $w = 0^p 1$.
-
-\noindent Zgodnie z lematem o pompowaniu istnieje rozkład $s = xyz$ taki, że:
-\[
-|xy| \le p,\quad |y| > 0.
-\]
-Warunek $|xy| \le p$ oznacza, że zarówno $x$, jak i $y$ składają się wyłącznie z pierwszego segmentu zer. Zatem:
-\[
-y = 0^k \quad \text{dla pewnego } k \ge 1.
+L=\{\, w w^R x \mid w,x\in\{0,1\}^* \,\},
 \]
 
-\noindent Napompujmy słowo, biorąc $i = 2$. Otrzymujemy słowo:
+
+gdzie \(w^R\) oznacza słowo \(w\) odwrócone. Należy ustalić, czy \(L\) jest językiem regularnym.
+
+\section{Idea dowodu}
+Twierdzenie Myhilla-Nerode’a orzeka, że język L jest regularny wtedy i tylko wtedy, gdy relacja sufiksowej nieodróżnialności generuje nam skończenie wiele klas abstrakcji.
+Pokażemy, że \(L\) nie jest regularny poprzez znalezienie sufiksu, który rozróżnia dwa słowa dla każdej pary indeksów co daje nam nieskończenie wiele klas.
+
+\section{Dowód}
+Dla \(n\ge 0\) zdefiniujmy
+
+
 \[
-s' = xy^2z = 0^{p+k} 1 1 0^p.
+s_n=(01)^n,\qquad t_n=(10)^n1.
 \]
 
-\noindent Jeśli $s'$ należałoby do $L$, to musiałoby mieć postać $u u^R$, co wymaga, aby liczba zer przed środkowymi jedynkami była równa liczbie zer po nich. Jednak:
+
+\noindent Zauważmy najpierw, że słowa \(s_n t_n\) należą do \(L\), bo
+
+
 \[
-p + k \neq p,
+s_n t_n=(01)^n(10)^n1 = w\,w^R x
 \]
-co prowadzi do sprzeczności.
+dla \(w=(01)^n\) i \(x=1\).
+Weźmy dwie różne liczby naturalne \(n\) i \(m\) i bez utraty ogólności załóżmy \(n<m\). Pokażemy, że sufiks \(t_n\) rozróżnia \(s_n\) i \(s_m\), tzn.
 
-\noindent Zatem założenie, że $L$ jest regularny, jest fałszywe.
 
-\begin{flushright}
-\(\Box\)
-\end{flushright}
+\[
+s_n t_n \in L \quad\text{oraz}\quad s_m t_n \notin L.
+\]
+Załóżmy przeciwnie, że \(s_m t_n\in L\). Wtedy istnieją słowa \(u,v\in\{0,1\}^*\) takie, że
+
+
+\[
+s_m t_n = u\,u^R v.
+\]
+Niech \(k=|u|\). Rozważymy pozycję \(u\) względem prefiksu \(s_m\).
+
+\subsection{Przypadek 1: \(k<|s_m|\)}
+W tym przypadku część \(u\) kończy się wewnątrz naprzemiennego wzoru \(s_m=(01)^m\). Ostatni znak \(u\) musi być zgodny z naprzemiennym wzorcem \(s_m\), a pierwszy znak \(u^R\) jest równy temu ostatniemu znakowi. To prowadzi do wymogu, by w odpowiednich pozycjach, gdzie łączy się \(u\) i \(u^R\) znajdowały się dwa takie same bity pod rząd. Jednak po każdym 0 w \(s_m\) występuje 1, a po każdym 1 występuje 0. To równocześnie nie może zajść. Zatem nie może zajść \(k<|s_m|\).
+
+\subsection{Przypadek 2: \(k\ge|s_m|\)}
+Jeśli \(k\ge|s_m|\), to \(u\) zawiera cały prefiks \(s_m\). W takim wypadku \(u^R\) musi znaleźć się w pozostałej części słowa \(s_m t_n\). Jednak ponieważ \(n<m\), pozostała część \(t_n\) ma długość mniejszą niż \(k\), więc nie wystarczy miejsca na pełne \(u^R\). To również prowadzi do sprzeczności.
+
+\noindent \\Z powyższych przypadków wynika, że założenie \(s_m t_n\in L\) jest fałszywe, stąd \(s_m t_n\notin L\).
+
+\section{Wniosek}
+Dla dowolnych dwóch różnych indeksów \(n\ne m\) istnieje sufiks (np. \(t_n\)), który rozróżnia \(s_n\) i \(s_m\). Oznacza to, że słowa \(s_n\) należą do nieskończenie wielu różnych klas równoważności Myhilla–Nerode. W konsekwencji \(L\) nie ma skończonej liczby klas równoważności i nie jest akceptowany przez żaden deterministyczny automat skończony. Zatem \(L\) nie jest językiem regularnym.
 
 \end{document}
