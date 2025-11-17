@@ -58,7 +58,22 @@ function mbisekcji(f, a::Float64, b::Float64, delta::Float64, epsilon::Float64)
     
 end
 
-
+"""
+Dane:
+f, pf - funkcją f(x) oraz pochodną f
+x0 - przybliżenie początkowe,
+delta,epsilon - dokładności obliczeń,
+maxit - maksymalna dopuszczalna liczba iteracji,
+Wyniki:
+(r,v,it,err) - czwórka, gdzie
+r - przybliżenie pierwiastka równania f(x) = 0,
+v - wartość f(r),
+it - liczba wykonanych iteracji,
+err - sygnalizacja błędu
+    0 - metoda zbieżna
+    1 - nie osiągnięto wymaganej dokładności w maxit iteracji,
+    2 - pochodna bliska zeru
+"""
 
 function mstycznych(f,pf,x0::Float64, delta::Float64, epsilon::Float64, maxit::Int)
     
