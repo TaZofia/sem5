@@ -51,7 +51,7 @@ function mbisekcji(f, a::Float64, b::Float64, delta::Float64, epsilon::Float64)
             a = r
             fa = f(a)
         else
-            return (Nothing, Nothing, it, 1)
+            return (r, v, it, 1)
         end
 
     end
@@ -76,30 +76,33 @@ err - sygnalizacja błędu
 """
 
 function mstycznych(f,pf,x0::Float64, delta::Float64, epsilon::Float64, maxit::Int)
-    
-    x1 = x0 - 1
-    f0 = f(x0)
-    i = maxit
+  
+    v = f(x0)
+    i = 1
 
-    while i > 0 && abs(x1 - x0) > delta && abs(f0) > epsilon
-        f1 = pf(x0)
-
-        if abs(f1) < epsilon        # pochodna bliska 0
-            return (Nothing, Nothing, maxit - i, 2)
-        end
-        
-        x1 = x0
-        x0 = x0 - f0 / f1
-        f0 = f(x0)
-
-        i -= 1
-
-        if i == 0
-            return  (Nothing, Nothing, maxit - i, 1)          
-        end
+    if abs(v) < epsilon
+        return x0, v, 0, 0
     end
 
-    return (x0, f0, maxit - i, 0)
+    while i <= maxit 
+        df = pf(x0)
+
+        if abs(f1) < epsilon        # pochodna bliska 0
+            return (x0, v, i, 2)
+        end
+    
+        x1 = x0 - v/df
+        v = f(x1)
+
+
+        if abs(x1 - x0) < delta || abs(v) < epsilon
+            return x1, v, i, 0
+        end
+        x0 = x1
+        i += 1
+    end
+
+    return (x0, v, i, 1)
 
 end
 
@@ -127,33 +130,41 @@ function msiecznych(f, x0::Float64, x1::Float64, delta::Float64, epsilon::Float6
 
     f0 = f(x0)
     f1 = f(x1)
-    i = maxit
-    while i > 0 && abs(x0 -x1) > delta
+    i = 1
 
-        """
-        złe punkty startowe
-        if abs(f0 - f1) < epsilon
-            return (Nothing, Nothing, maxit - i, )            
+    if !isfinite(f0) || !isfinite(f1)
+        return (Nothing, Nothing, 0, 1)
+    end
+
+    if abs(f0) <= epsilon
+        return (x0, f0, 0, 0)
+    end
+    if abs(f1) <= epsilon
+        return (x1, f1, 0, 0)
+    end
+
+    while i <= maxit
+
+        if abs(f0) < abs(f1)    # zabezpieczenie się przed za małym mianownikiem        
+            x0, x1 = x1, x0
+            f0, f1 = f1, f0
         end
-        """
 
-        r = x0 - f0 * (x0 - x1) / (f0- f1)
+        r = x0 - f0 * (x0 - x1) / (f0 - f1)
         v = f(r)
 
-        if abs(v) < epsilon
-            return (r, v, maxit - i, 0)
+        if abs(v) < epsilon     # nasze znalezione przybliżenie
+            return (r, v, i, 0)
         end
         x1 = x0
         f1 = f0
         x0 = r
         f0 = v
 
-        i-=1
+        i+=1
 
-        if i == 0
-           return (Nothing, Nothing, maxit - i, 1)            
-        end
     end
+    return (r, v, i, 1)   
 end
 
 end
