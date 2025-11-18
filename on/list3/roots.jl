@@ -27,7 +27,7 @@ function mbisekcji(f, a::Float64, b::Float64, delta::Float64, epsilon::Float64)
     if !(isfinite(fa) && isfinite(fb))
         return (Nothing, Nothing, 0, 1)
     end
-    if fa * fb <= 0
+    if fa * fb >= 0
         return (Nothing, Nothing, 0, 1)
     end
 
