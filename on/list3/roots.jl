@@ -75,19 +75,20 @@ err - sygnalizacja błędu
     2 - pochodna bliska zeru
 """
 
-function mstycznych(f,pf,x0::Float64, delta::Float64, epsilon::Float64, maxit::Int)
+function mstycznych(f, pf, x0::Float64, delta::Float64, epsilon::Float64, maxit::Int)
   
     v = f(x0)
-    i = 1
+    i = 0
 
     if abs(v) < epsilon
         return x0, v, 0, 0
     end
 
-    while i <= maxit 
+    while i < maxit 
+        i += 1
         df = pf(x0)
 
-        if abs(f1) < epsilon        # pochodna bliska 0
+        if abs(df) < epsilon        # pochodna bliska 0
             return (x0, v, i, 2)
         end
     
@@ -99,7 +100,6 @@ function mstycznych(f,pf,x0::Float64, delta::Float64, epsilon::Float64, maxit::I
             return x1, v, i, 0
         end
         x0 = x1
-        i += 1
     end
 
     return (x0, v, i, 1)
@@ -130,7 +130,7 @@ function msiecznych(f, x0::Float64, x1::Float64, delta::Float64, epsilon::Float6
 
     f0 = f(x0)
     f1 = f(x1)
-    i = 1
+    i = 0
 
     if !isfinite(f0) || !isfinite(f1)
         return (Nothing, Nothing, 0, 1)
@@ -143,7 +143,11 @@ function msiecznych(f, x0::Float64, x1::Float64, delta::Float64, epsilon::Float6
         return (x1, f1, 0, 0)
     end
 
-    while i <= maxit
+    r = x1
+    v = f1
+    while i < maxit
+
+        i+=1
 
         if abs(f0) < abs(f1)    # zabezpieczenie się przed za małym mianownikiem        
             x0, x1 = x1, x0
@@ -160,9 +164,6 @@ function msiecznych(f, x0::Float64, x1::Float64, delta::Float64, epsilon::Float6
         f1 = f0
         x0 = r
         f0 = v
-
-        i+=1
-
     end
     return (r, v, i, 1)   
 end
