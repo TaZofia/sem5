@@ -1,3 +1,5 @@
+# Zofia Tarchalska
+
 module roots
 
 export mbisekcji, mstycznych, msiecznych
@@ -149,7 +151,7 @@ function msiecznych(f, x0::Float64, x1::Float64, delta::Float64, epsilon::Float6
 
         i+=1
 
-        if abs(f0) < abs(f1)    # zabezpieczenie się przed za małym mianownikiem        
+        if abs(f1) < abs(f0)    # zabezpieczenie się przed za małym mianownikiem        
             x0, x1 = x1, x0
             f0, f1 = f1, f0
         end

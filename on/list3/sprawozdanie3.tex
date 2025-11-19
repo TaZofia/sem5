@@ -15,7 +15,7 @@
 \begin{document}
 \maketitle
 
-\section{Zadania 1-3}
+\section*{Zadania 1-3}
 Celem zadań jest oprogramowanie funkcji, które będą obliczały miejsca zerowe na 3 różne sposoby. Należało umieścić je w jednym module. Funkcje zwracają:
 \begin{itemize}
     \item r - przybliżenie pierwiastka funkcji,
@@ -24,7 +24,7 @@ Celem zadań jest oprogramowanie funkcji, które będą obliczały miejsca zerow
     \item err - sygnalizacja błędu, różne wartości dla różnych błędów w zależności od zadania i specyficznych ograniczeń każdej z funkcji.
 \end{itemize}
 
-\subsection{Zadanie 1}
+\subsection*{Zadanie 1}
 Zaimplementowanie funckji rozwiązującej $f(x)=0$ metodą bisekcji. Wymaga ona aby:
 \begin{itemize}
     \item funckja $f$ była ciągła na przedziale $[a, b]$, w którym szukamy miejsca zerowego,
@@ -42,7 +42,7 @@ Argumenty funckji:
 \subsubsection*{Sposób działania}
 Konsekwentnie dzielimy przedział na pół. Jeśli trafimy na wartość równą 0 - znaleźliśmy rozwiązanie. W przeciwnym razie wybieramy podprzedział, w którym wartości funkcji na krańcach mają przeciwne znaki.
 
-\subsection{Zadanie 2}
+\subsection*{Zadanie 2}
 W tym zadaniu zaimplementowana funkcja wylicza miejsca zerowe metodą Newtona. Funkcja musi spełniać poniższe wymagania:
 \begin{itemize}
     \item jest określona,
@@ -61,7 +61,7 @@ Argumenty funkcji:
 \subsubsection*{Sposób działania}
 Jest to metoda iteracyjna. Zaczynamy od przybliżenia początkowego $x_0$ i w każdej iteracji zastępujemy funkcję jej styczną w punkcie $x_i$, wyznaczając przecięcie tej stycznej z osią OX jako nowe przybliżenie $x_{1+1}$.
 
-\subsection{Zadanie 3}
+\subsection*{Zadanie 3}
 W tym zadaniu, do obliczenia miejsc zerowych funkcji, należy posłużyć się metodą siecznych. Funkcja musi spełniać poniższe warunki:
 \begin{itemize}
     \item jest ciągła,
@@ -85,12 +85,100 @@ Oto wzór:
     x_i = x_{i-1} - f(x_{i-1}) \cdot \frac{x_{i-1} - x_{i-2}}{f(x_{i-1}) - f(x_{i-2})}
 \]
 
+\section*{Zadanie 4}
+W zadaniu 4 należy przetestować wszystkie 3 metody obliczania miejsc zerowych dla funkcji $f(x) = sin(x) - (\frac{1}{2} \cdot x)^2$. Dla wywołań:
+\begin{verbatim}
+delta = 1/2 * 10^-5
+epsilon = 1/2 * 10^-5
+
+mbisekcji(f, 1.5, 2.0, delta, epsilon)
+mstycznych(f, df, 1.5, delta, epsilon, 50)
+msiecznych(f, 1.0, 2.0, delta, epsilon, 50)
+\end{verbatim}
+
+otrzymujemy wyniki:
+\begin{verbatim}
+metoda bisekcji
+r = 1.9337501525878906
+v = 4.772428664701067e-6
+it = 17
+err = 0
+
+metoda stycznych
+r = 1.933753779789742
+v = -2.2423316314856834e-8
+it = 4
+err = 0
+
+metoda siecznych
+r = 1.933753644474301
+v = 1.564525129449379e-7
+it = 4
+err = 0  
+\end{verbatim}
 
 
+\subsection*{Wnioski}
 
+Po wrzuceniu tej funkcji do programu Wolfram Alpha otrzymujemy wynik:
+\[x \approx 1.93375\]
+Widzimy, że wszystkie 3 sposoby są całkiem precyzyjne. Pokrywają się z wynikiem podanym przez Wolframa do 5 miejsc po przecinku. Najdokładniejsze wyniki zwróciła metoda stycznych. W jej przypadku wartość funkcji jest najbliżej zera. Metoda bisekcji potrzebowała aż czterokrotnie więcej iteracji, niż dwie pozostałe, aby znaleźć precyzyjny wynik. Stąd możemy założyć, że w przypadku gdy znamy pochodną funkcji (jest ona łatwa do wyliczenia oraz nie ma złośliwych ekstremów lokalnych) warto posługiwać się metodą stycznych. Metoda siecznych "obchodzi" te problemy i oferuje również całkiem dobre rozwiązanie w podobnej liczbie iteracji. Jeśli jednak na pewno chcemy znaleźć wynik ponad cenę szybkości działania metoda bisekcji będzie pod tym kątem niezawodna.
 
+\section*{Zadanie 5}
+Celem zadania 5 jest wyznaczenie wartości zmiennej $x$, dla której przecinają się wykresy funkcji $y = 3x$ i $y = e^x$. Jak wiemy funkcje przecinają się w tym samym punkcie kiedy przyjmują te same wartości dla tych samych argumentów. Czyli przyrównujemy wzory funkcji, aby znaleźć $x$, dla których przyjmują te same wartości.
+\[ 3x = e^x \]      
+Ostatecznie otrzymujemy takie równanie. 
+\[ 3x - e^x = 0 \]
+Teraz możemy, zgodnie z poleceniem zadania, metodą bisekcji, policzyć miejsca zerowe funkcji $ g(x) = 3x - e^x $
 
+Do tego potrzebujemy jednak przedziałów, w których znajdują się potencjalne miejsca zerowe.
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{3x.png}
+        \caption{$y = 3x$}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex.png}
+        \caption{$y = e^x$}
+    \end{minipage}
+\end{figure}
 
+Funkcje wyglądają tak jak powyżej. Ze względu na ich kształt widzimy, że będą miały one dwa punkty wspólne.
+
+Dla $x \leq 0$ mamy $3x \leq 0 < e^x$. Wtedy nasza funckja $g(x)$ jest cały czas ujemna. Zatem od nieskończoności do zera nie ma żadnych punktów wspólnych.
+
+Dla $x = 1$ mamy $ e = 2,7... < 3 $, więc $g(x)$ jest dodatnie, natomiast dla $x = 3$ mamy $ e^3 = 20,08..... > 3*3 = 9$, czyli $g(x)$ jest znów ujemne. 
+
+Tym sposobem znalezione zostały dwa przedziały, w których na krańcach funkcja przyjmuje wartości o przeciwnych znakach. Są to $[0, 1]$ oraz $[1, 3]$.
+
+Po wywołaniu funkcji mbisekcji dla tych przedziałów z $\delta = 10^-4$ i $\epsilon = 10^-4$ otrzymujemy poniższe wyniki:
+\begin{verbatim}
+Przedział [0, 1]
+Punkt wspólny x     0.61907958984375
+3x - e^x            2.091677592419572e-5
+Liczba iteracji     14
+Kod błędu           0
+Przedział [1, 3]
+Punkt wspólny x     1.51214599609375
+3x - e^x            -1.7583570236290313e-5
+Liczba iteracji     15
+Kod błędu           0
+\end{verbatim}
+
+\subsection*{Wnioski}
+Wyniki wg Wolfram Alpha:
+\[
+    x \approx 0.619061
+\]
+\[
+    x \approx 1.51213
+\]
+Dokładność uzykanych przez nas wyników w porównaniu z Wolframem to 4 miejsca po przecinku. Są to wyniki precyzyjne lecz aby je uzyskać potrzebowaliśmy dokładnej analizy problemu. Należało przyjrzeć się przebiegom funkcji i w przybliżeniu określić ich zachowanie na przedziałach. To pozwoliło nam posłużyć się metodą bisekcji i tym razem już precyzyjnie określić wynik. Metoda bisekcji, pod warunkiem spełnienia warunków początkowych, zawsze zapewni nam znalezienie pierwiastka. Jednak, aby wyliczyć wszystkie pierwiastki potrzebujemy posiłkować się wiedzą z analizy matematycznej/rozszerzonej matematyki w liceum. Im węższy przedział uda nam się znaleźć tym barzdiej zaoszczędzimy liczbę iteracji algorytmu.
+
+\section*{Zadanie 6}
 
 
 \end{document}

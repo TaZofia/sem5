@@ -1,3 +1,5 @@
+# Zofia Tarchalska
+
 include("roots.jl")
 using .roots
 using Test
