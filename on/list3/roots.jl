@@ -53,7 +53,7 @@ function mbisekcji(f, a::Float64, b::Float64, delta::Float64, epsilon::Float64)
             a = r
             fa = f(a)
         else
-            return (r, v, it, 1)
+            return (r, v, it, 0)
         end
 
     end

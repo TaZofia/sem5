@@ -179,6 +179,161 @@ Wyniki wg Wolfram Alpha:
 Dokładność uzykanych przez nas wyników w porównaniu z Wolframem to 4 miejsca po przecinku. Są to wyniki precyzyjne lecz aby je uzyskać potrzebowaliśmy dokładnej analizy problemu. Należało przyjrzeć się przebiegom funkcji i w przybliżeniu określić ich zachowanie na przedziałach. To pozwoliło nam posłużyć się metodą bisekcji i tym razem już precyzyjnie określić wynik. Metoda bisekcji, pod warunkiem spełnienia warunków początkowych, zawsze zapewni nam znalezienie pierwiastka. Jednak, aby wyliczyć wszystkie pierwiastki potrzebujemy posiłkować się wiedzą z analizy matematycznej/rozszerzonej matematyki w liceum. Im węższy przedział uda nam się znaleźć tym barzdiej zaoszczędzimy liczbę iteracji algorytmu.
 
 \section*{Zadanie 6}
+Celem zadania jest znalezienie miejsc zerowych funkcji:
+\[f_1(x) = e^{1-x} - 1\]
+\[f_2(x) = x \cdot e^{-x}\] 
+za pomocą wszystkich trzech metod: bisekcji, stycznych i siecznych. Przyjmujemy:
+$\delta = 10^{-5}$ i $\epsilon = 10^{-5}$.
 
+Teraz przeprowadźmy analizę. Łatwo zauważyć, że $f_1(1) = 0$. Funkja ta jest również funkcją malejącą, ponieważ $f_1(x) = e^{1-x}$ jest malejąca, a $-1$ tylko obniża ją jeszcze o $1$. Wobec tego $x = 1$ to jedyne miejsce zerowe $f_1$. Dla funkcji $f_2$ miejscem zerowym jest $x = 0$, ponieważ we wzorze funkcji występuje mnożenie przez $x$. Jest to jedyne miejsce zerowe, ponieważ $e^{-x}$ nigdy nie osiągnie wartości 0. Wystarczy spojrzeć na wykres w zadaniu 5, żeby to zrozumieć. Tam mamy zobrazowany przebieg funkcji $e^x$, która miejsc zerowych nie posiada. Otrzymamy z niej $e^{-x}$ poprzez symetryczne odbicie względem osi OY. Podsumowując:
+\[f_1(1) = 0\]
+\[f_2(0) = 0\]
+
+\subsection*{Funckja $f_1$}
+
+Dla metody bisekcji:
+\begin{verbatim}
+Przedział [0.0, 2.0]
+x = 1.0
+f1(x) = 0.0
+Liczba iteracji     1
+Kod błędu           0
+
+Przedział [0.0, 3.0]
+x = 1.0000019073486328
+f1(x) = -1.9073468138230965e-6
+Liczba iteracji     19
+Kod błędu           0
+
+Przedział [0.0, 10.5]
+x = 1.0000011920928955
+f1(x) = -1.1920921849650767e-6
+Liczba iteracji     21
+Kod błędu           0
+\end{verbatim}
+Wyniki prezentują się następujaco. W przypadku pierwszego przedziału był on symetryczny względem prawdziwego miejsca zerowego. Kolejne były coraz bardziej asymetryczne.
+
+Dla memtody stycznych:
+\begin{verbatim}
+Przybliżenie x = 0.0
+x = 0.9999984358892101
+f1(x) = 1.5641120130194253e-6
+Liczba iteracji     4
+Kod błędu           0
+
+Przybliżenie x = 1.0
+x = 1.0
+f1(x) = 0.0
+Liczba iteracji     0
+Kod błędu           0
+
+Przybliżenie x = -2.0
+x = 0.9999999999251376
+f1(x) = 7.486256059507923e-11
+Liczba iteracji     7
+Kod błędu           0
+
+Przybliżenie x = 1.0e6
+x = 1.0e6
+f1(x) = -1.0
+Liczba iteracji     1
+Kod błędu           2
+\end{verbatim}
+
+Dla metody siecznych:
+\begin{verbatim}
+Przybliżenia x1 = 0.0, x2 = 2.0
+x = 1.0000017597132702
+f1(x) = -1.7597117218937086e-6
+Liczba iteracji     6
+Kod błędu           0
+
+Przybliżenia x1 = 0.0, x2 = 3.0
+x = 0.999999739048799
+f1(x) = 2.6095123506486573e-7
+Liczba iteracji     9
+Kod błędu           0
+
+Przybliżenia x1 = 0.0, x2 = 10.5
+x = NaN
+f1(x) = NaN
+Liczba iteracji     50
+Kod błędu           1
+\end{verbatim}
+
+\subsection*{Funkcja $f_2$}
+
+Metoda bijekcji:
+
+\begin{verbatim}
+Przedział [-1.0, 1.0]
+x = 0.0
+f2(x) = 0.0
+Liczba iteracji     1
+Kod błędu           0
+
+Przedział [-1.0, 2.0]
+x = 7.62939453125e-6
+f2(x) = 7.62933632381113e-6
+Liczba iteracji     17
+Kod błędu           0
+
+Przedział [-1.0, 9.5]
+x = -3.814697265625e-6
+f2(x) = -3.814711817567984e-6
+Liczba iteracji     17
+Kod błędu           0
+\end{verbatim}
+
+Metoda stycznych:
+\begin{verbatim}
+Przybliżenie x = -1.0
+x = -3.0642493416461764e-7
+f2(x) = -3.0642502806087233e-7
+Liczba iteracji     5
+Kod błędu           0
+
+Przybliżenie x = 0.0
+x = 0.0
+f2(x) = 0.0
+Liczba iteracji     0
+Kod błędu           0
+
+Przybliżenie x = 3.0
+x = 14.787436802837927
+f2(x) = 5.594878975694858e-6
+Liczba iteracji     10
+Kod błędu           0
+
+Przybliżenie x = 1.0e6
+x = 1.0e6
+f2(x) = 0.0
+Liczba iteracji     0
+Kod błędu           0
+\end{verbatim}
+
+Metoda siecznych:
+\begin{verbatim}
+Przybliżenia x1 = -1.0, x2 = 1.0
+x = 1.744165849924562e-8
+f2(x) = 1.7441658195034172e-8
+Liczba iteracji     18
+Kod błędu           0
+
+Przybliżenia x1 = -1.0, x2 = 2.0
+x = 14.310428368676307
+f2(x) = 8.72393778926339e-6
+Liczba iteracji     15
+Kod błędu           0
+
+Przybliżenia x1 = -1.0, x2 = 9.5
+x = 14.314813369417385
+f2(x) = 8.68842855838761e-6
+Liczba iteracji     7
+Kod błędu           0
+\end{verbatim}
+
+TO DO 
+EKSPERYMENTY DODATKOWE I WINIOSKI 
 
 \end{document}
