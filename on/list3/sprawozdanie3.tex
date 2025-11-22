@@ -213,7 +213,7 @@ Kod błędu           0
 \end{verbatim}
 Wyniki prezentują się następujaco. W przypadku pierwszego przedziału był on symetryczny względem prawdziwego miejsca zerowego. Kolejne były coraz bardziej asymetryczne.
 
-Dla memtody stycznych:
+Dla metody stycznych:
 \begin{verbatim}
 Przybliżenie x = 0.0
 x = 0.9999984358892101
@@ -333,7 +333,34 @@ Liczba iteracji     7
 Kod błędu           0
 \end{verbatim}
 
-TO DO 
-EKSPERYMENTY DODATKOWE I WINIOSKI 
+\subsection*{Pytania dodatkowe}
+Mieliśmy sprawdzić so się stanie, gdy w metodzie Newtona dla $f_1$ wybierzemy miejsce zerowe $x_0 \in (1, \infty]$ oraz $x_0 > 1$ dla $f_2$. Dodatkowo należało się zastanowić czy możemy wybrać $x_0 = 1$ dla $f_2$.
+
+Odpowiedź:
+Nie możemy wybrać 1 na miejsce zerowe funkcji $f_2$. Dzieje się tak z powodu wzoru na pochodą. Gdy podstawimy 1 do wzoru $f_2'(x) = e^{-x} \cdot (1 - x)$ otrzymamy 0. To daje dzielenie we wzorze używanym w metodzie Newtona: 
+\[x_{n+1} = x_n - \frac{f_2(x_n)}{f_2'(x_n)} = \frac{(x_n)^2}{x_n - 1}\]
+Czyli taka opcja musi zostać wykluczona. Dodatkowo gdyby miejsce zerowe było > 1 mielibyśmy sytuację, w której styczne coraz gorzej odwzorowują przebieg funkcji. Dla bardzo dużych $x_0$ może zajść $|f_2(x_0)| < \epsilon$, co spowoduje przyjęcie go za miejsce zerowe. Możemy zaobserowować dla $x = 10^6$. Może się wtedy również stać, że  $|f_2(x_0)| < \epsilon$ co zakończy działanie metody błędem.
+
+Jeśli chodzi o przyjęcie $x_0 > 1$ w przypadku funkcji $f_1$ przy użyciu metody Newtona, jest to również niewskazane dla dużych $x_0$. Gdy miejsce zerowe jest niewiele blisko 1 wtedy metoda zbiega do 1. Jednak dla dużych $x_0$ > 1 pochodna $f_1'(x) = -e^{1-x}$ jest bardzo bliska 0. Wtedy mamy ten sam problem co w poprzednim przypadku. We wzorze:
+\[x_{n+1} = x_n - \frac{f_1(x_n)}{f_1'(x_n)} \]
+wystąpi dzielenie przez 0. Więc ten przypadek też musimy wykluczyć.
+
+\subsection*{Wnioski}
+Podczas stosowania metod wyznaczania pierwiastków należy zachować ostrożność i wcześniej przeanalizować
+zachowanie badanych funkcji. Pozwala to uniknąć błędnych rezultatów, które mogą pojawić się nawet dla
+pozornie prostych przypadków. Odpowiedni dobór parametrów algorytmu okazuje się kwestią kluczową – niewielka
+zmiana warunków początkowych może jedynie wydłużyć czas obliczeń, ale w skrajnych sytuacjach całkowicie
+uniemożliwić uzyskanie rozwiązania.
+
+Uzyskane wyniki potwierdzają, że metoda bisekcji jest najbardziej niezawodna. Teoretycznie wystarczy poprawnie
+wybrać krańce przedziału $a$ i $b$, aby zawsze dojść do pierwiastka. Jednak brak uwagi ze strony użytkownika
+może prowadzić do wykonania ogromnej liczby iteracji bądź błędu.
+Próba szybkiego uzyskania przybliżonych wartości pierwiastków przy jednoczesnym wyborze małej dokładności
+i szerokiego przedziału może w przypadku „trudnych” funkcji skutkować znacznym błędem.
+
+Warto zauważyć, że samo dostosowanie parametrów $\delta$ i $\epsilon$ nie gwarantuje poprawnego działania
+dla metod innych niż bisekcja. Przykładowo, dla funkcji $f_2$ źle dobrany punkt startowy w metodzie Newtona
+powoduje, że kolejne przybliżenia oddalają się od rozwiązania. W efekcie można otrzymać bardzo duże wartości
+argumentu $x$, dla których funkcja przyjmuje wartości mniejsze od $\varepsilon$, a nawet wpada w zero maszynowe.
 
 \end{document}
