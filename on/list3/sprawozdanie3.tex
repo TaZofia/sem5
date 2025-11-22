@@ -25,7 +25,7 @@ Celem zadań jest oprogramowanie funkcji, które będą obliczały miejsca zerow
 \end{itemize}
 
 \subsection*{Zadanie 1}
-Zaimplementowanie funckji rozwiązującej $f(x)=0$ metodą bisekcji. Wymaga ona aby:
+Zaimplementowanie funkcji rozwiązującej $f(x)=0$ metodą bisekcji. Wymaga ona aby:
 \begin{itemize}
     \item funckja $f$ była ciągła na przedziale $[a, b]$, w którym szukamy miejsca zerowego,
     \item oraz żeby miała różne znaki wartości na końcach przedziału, czyli $f(a) \cdot f(b) < 0$.
@@ -122,7 +122,7 @@ err = 0
 
 Po wrzuceniu tej funkcji do programu Wolfram Alpha otrzymujemy wynik:
 \[x \approx 1.93375\]
-Widzimy, że wszystkie 3 sposoby są całkiem precyzyjne. Pokrywają się z wynikiem podanym przez Wolframa do 5 miejsc po przecinku. Najdokładniejsze wyniki zwróciła metoda stycznych. W jej przypadku wartość funkcji jest najbliżej zera. Metoda bisekcji potrzebowała aż czterokrotnie więcej iteracji, niż dwie pozostałe, aby znaleźć precyzyjny wynik. Stąd możemy założyć, że w przypadku gdy znamy pochodną funkcji (jest ona łatwa do wyliczenia oraz nie ma złośliwych ekstremów lokalnych) warto posługiwać się metodą stycznych. Metoda siecznych "obchodzi" te problemy i oferuje również całkiem dobre rozwiązanie w podobnej liczbie iteracji. Jeśli jednak na pewno chcemy znaleźć wynik ponad cenę szybkości działania metoda bisekcji będzie pod tym kątem niezawodna.
+Widzimy, że wszystkie 3 sposoby są całkiem precyzyjne. Pokrywają się z wynikiem podanym przez Wolframa do 5 miejsc po przecinku. Najdokładniejsze wyniki zwróciła metoda stycznych. W jej przypadku wartość funkcji jest najbliżej zera. Metoda bisekcji potrzebowała aż czterokrotnie więcej iteracji, niż dwie pozostałe, aby znaleźć precyzyjny wynik. Stąd możemy założyć, że w przypadku gdy znamy pochodną funkcji (jest ona łatwa do wyliczenia oraz nie ma złośliwych ekstremów lokalnych) warto posługiwać się metodą stycznych. Metoda siecznych ''obchodzi'' te problemy i oferuje również całkiem dobre rozwiązanie w podobnej liczbie iteracji. Jeśli jednak na pewno chcemy znaleźć wynik ponad cenę szybkości działania metoda bisekcji będzie pod tym kątem niezawodna.
 
 \section*{Zadanie 5}
 Celem zadania 5 jest wyznaczenie wartości zmiennej $x$, dla której przecinają się wykresy funkcji $y = 3x$ i $y = e^x$. Jak wiemy funkcje przecinają się w tym samym punkcie kiedy przyjmują te same wartości dla tych samych argumentów. Czyli przyrównujemy wzory funkcji, aby znaleźć $x$, dla których przyjmują te same wartości.
@@ -176,7 +176,7 @@ Wyniki wg Wolfram Alpha:
 \[
     x \approx 1.51213
 \]
-Dokładność uzykanych przez nas wyników w porównaniu z Wolframem to 4 miejsca po przecinku. Są to wyniki precyzyjne lecz aby je uzyskać potrzebowaliśmy dokładnej analizy problemu. Należało przyjrzeć się przebiegom funkcji i w przybliżeniu określić ich zachowanie na przedziałach. To pozwoliło nam posłużyć się metodą bisekcji i tym razem już precyzyjnie określić wynik. Metoda bisekcji, pod warunkiem spełnienia warunków początkowych, zawsze zapewni nam znalezienie pierwiastka. Jednak, aby wyliczyć wszystkie pierwiastki potrzebujemy posiłkować się wiedzą z analizy matematycznej/rozszerzonej matematyki w liceum. Im węższy przedział uda nam się znaleźć tym barzdiej zaoszczędzimy liczbę iteracji algorytmu.
+Dokładność uzykanych przez nas wyników w porównaniu z Wolframem to 4 miejsca po przecinku. Są to wyniki precyzyjne lecz aby je uzyskać potrzebowaliśmy dokładnej analizy problemu. Należało przyjrzeć się przebiegom funkcji i w przybliżeniu określić ich zachowanie na przedziałach. To pozwoliło nam posłużyć się metodą bisekcji i tym razem już precyzyjnie określić wynik. Metoda bisekcji, pod warunkiem spełnienia warunków początkowych, zawsze zapewni nam znalezienie pierwiastka. Jednak, aby wyliczyć wszystkie pierwiastki potrzebujemy posiłkować się wiedzą z analizy matematycznej/rozszerzonej matematyki w liceum. Im węższy przedział uda nam się znaleźć tym bardziej zaoszczędzimy liczbę iteracji algorytmu.
 
 \section*{Zadanie 6}
 Celem zadania jest znalezienie miejsc zerowych funkcji:
