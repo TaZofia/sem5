@@ -9,6 +9,7 @@ int top = -1;
 
 int wrong_symbol_flag = 0;
 int too_few_arguments_flag = 0;
+int division_zero = 0;
 
 void push(int value);
 int pop();
@@ -22,7 +23,7 @@ int peek();
 "+"                     { ECHO; int a = pop(); int b = pop(); push(b + a); }
 "-"                     { ECHO; int a = pop(); int b = pop(); push(b - a); }
 "*"                     { ECHO; int a = pop(); int b = pop(); push(b * a); }
-"/"                     { ECHO; int a = pop(); int b = pop(); push(b / a); }
+"/"                     { ECHO; int a = pop(); int b = pop(); if (a == 0) {division_zero = 1;} else push(b / a); }
 "^"                     { ECHO; int a = pop(); int b = pop(); push((int)pow(b, a)); }
 "%"                     { ECHO; int a = pop(); int b = pop(); push(b % a); }
 
@@ -34,6 +35,9 @@ int peek();
                             } else if (wrong_symbol_flag == 1){
                                 printf("\n[ERROR] Wrong symbol\n");
                                 wrong_symbol_flag = 0;
+                            } else if (division_zero == 1) {
+                                printf("\n[ERROR] Division by zero\n");
+                                division_zero = 0;
                             } else if (top == 0) {
                                 printf("= %d \n", stack[top]);
                             } else {
