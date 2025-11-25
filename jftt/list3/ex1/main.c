@@ -15,7 +15,7 @@ int main() {
     }
 
     char line[MAX_LINE];      // bufor na jedną wczytaną linię 
-    char combined_line[MAX_LINE * 4];  // bufor na linie kończące się \ 
+    char combined_line[MAX_LINE * 4];  /* bufor na linie kończące się \  */
 
     line[0] = '\0';
     combined_line[0] = '\0';
@@ -23,6 +23,7 @@ int main() {
     while (fgets(line, sizeof(line), fp)) {
 
         if (line[0] == '#') {     // pomiń komentarze
+            printf("%s\n", line);
             continue;
         }
 
