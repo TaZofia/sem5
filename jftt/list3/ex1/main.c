@@ -10,7 +10,7 @@ extern FILE *yyin;
 int main() {
     FILE *fp = fopen("exercise.txt", "r");
     if (!fp) {
-        perror("Nie mogę otworzyć exercise.txt");
+        perror("[ERROR] Can't open exercise.txt");
         return 1;
     }
 
@@ -42,7 +42,7 @@ int main() {
             /* otwórz strumień z pamięci */
             FILE *tmp = fmemopen(combined_line, strlen(combined_line), "r");
             if (!tmp) {
-                perror("Nie mogę utworzyć strumienia");
+                perror("[ERROR] Can't open stream");
                 fclose(fp);
                 return 1;
             }

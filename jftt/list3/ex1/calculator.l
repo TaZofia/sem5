@@ -17,6 +17,8 @@
 ")"         { return RPAREN; }
 "^"         { return POW; }
 
+[0-9]+\^[0-9]+\^    {return POWER_ERROR; }
+
 .           { return yytext[0]; }   /* dowolny inny znak zwróć jako sam siebie */
 
 %%
