@@ -1,21 +1,12 @@
-include("graph.jl")
-
-
 module Read
 using ..Graphs
 export read_graph_from_file
 
 function read_graph_from_file(filename)
-    count =0
 
     graph = Graphs.Graph([])
 
     for line in eachline(filename)
-        count = count + 1
-        if count == 15
-            return
-        end
-        
 
         problem = ""
         number_of_vertices = 0
@@ -29,8 +20,8 @@ function read_graph_from_file(filename)
             number_of_edges = parse(Int, splitted_line[4])
         end
 
-        for i in 1:number_of_edges
-            n = Graphs.Node(1, nothing, Inf, [])         
+        for i in 1:number_of_vertices
+            n = Graphs.Node(i, nothing, Inf, [])         
             push!(graph.all_vertices, n)
         end
         

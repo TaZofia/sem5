@@ -1,8 +1,5 @@
-
-include("graph.jl")
-
 module Dijkstra
-using ..Graphs: Graph, Node
+using ..Graphs
 using DataStructures
 export dijkstra
 
@@ -25,15 +22,21 @@ end
 function dijkstra(graph, start)
 
     initialize_single_source(graph, start)
-    vertices_with_final_sp = Nothing
+    vertices_with_final_sp = Vector{Graphs.Node}()
 
-    Q = PriorityQueue{Graphs.Node, Int}()
+    Q = PriorityQueue{Graphs.Node, Float64}()
+    for v in graph.all_vertices
+        enqueue!(Q, v, v.dist)        
+    end
 
     while !isempty(Q)
-        min_vertex = !dequeue(Q)
-        vertices_with_final_sp.add(min_vertex)
+        min_vertex = dequeue!(Q)
+        push!(vertices_with_final_sp, min_vertex)
         for (vertex, weight) in min_vertex.adj_list 
-            relax(min_vertex, vertex, weight)              
+            relax(min_vertex, vertex, weight) 
+            if haskey(Q, vertex)
+                Q[vertex] = vertex.dist
+            end             
         end
     end
     return vertices_with_final_sp
