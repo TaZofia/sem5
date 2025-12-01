@@ -8,6 +8,6 @@ using .Graphs
 using .Dijkstra
 using .Read
 
-export Graph, Node, dijkstra, read_graph_from_file
+export Graph, Node, dijkstra, read_graph_from_file, dial_for_sources, radix_heap_solver
 
 end

@@ -5,8 +5,8 @@ export Node, Graph
 mutable struct Node
     value::Int
     parent::Union{Nothing, Node}  
-    dist::Float64 
-    adj_list::Vector{Tuple{Node, Float64}}
+    dist::Int
+    adj_list::Vector{Tuple{Node, Int}}
 end
 
 mutable struct Graph

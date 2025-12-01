@@ -21,7 +21,7 @@ function read_graph_from_file(filename)
         end
 
         for i in 1:number_of_vertices
-            n = Graphs.Node(i, nothing, Inf, [])         
+            n = Graphs.Node(i, nothing, typemax(Int), [])         
             push!(graph.all_vertices, n)
         end
         
