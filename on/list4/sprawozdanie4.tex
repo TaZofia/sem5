@@ -15,7 +15,7 @@
 
 \begin{document}
 \maketitle
-\section*{Wstęp do zadań 1-3}
+\section*{Wstęp do zadań 1-4}
 W pierwszych trzech zadaniach należy zaimplementować algortymy dotyczące interpolacji wielomianowej.
 
 Interpolacja wielomianowa jest jednym z podstawowych narzędzi analizy numerycznej, pozwalającym na przybliżanie funkcji za pomocą wielomianów przechodzących przez zadane punkty. Szczególnie użyteczna jest postać Newtona, w której współczynniki wyznaczane są za pomocą ilorazów różnicowych. Ta reprezentacja jest wygodna obliczeniowo i umożliwia łatwe dodawanie nowych węzłów bez konieczności ponownego wyznaczania całego wielomianu.
@@ -177,5 +177,49 @@ Wielomian Newtona zapisany jest w postaci iloczynowej z ilorazami różnicowymi 
     \item Pamięciowa: $O(n)$, ponieważ przechowywany jest tylko wektor wynikowy $a$.
 \end{itemize}
 
+\section*{Zadanie 4}
+\subsection*{Algorytm rysowania wielomianu interpolacyjnego Newtona}
+
+\subsubsection*{Wejście}
+\begin{itemize}
+    \item Funkcja $f(x)$ zadana jako anonimowa funkcja.
+    \item Przedział interpolacji $[a,b]$.
+    \item Stopień wielomianu interpolacyjnego $n$.
+\end{itemize}
+
+\subsubsection*{Wyjście}
+\begin{itemize}
+    \item Wykres przedstawiający na jednym rysunku:
+    \begin{enumerate}
+        \item interpolowaną funkcję $f(x)$,
+        \item wielomian interpolacyjny Newtona $N_n(x)$.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{Idea działania}
+Algorytm konstruuje wielomian interpolacyjny Newtona na podstawie wartości funkcji w wybranych węzłach interpolacji. Węzły są równoodległe w przedziale $[a,b]$. Najpierw obliczane są wartości funkcji w tych punktach, a następnie ilorazy różnicowe, które stanowią współczynniki postaci Newtona. Do obliczania wartości wielomianu w dowolnym punkcie wykorzystuje się funkcję \texttt{warNewton}, która działa w czasie liniowym $O(n)$.  
+
+Aby narysować przebieg funkcji i wielomianu, algorytm tworzy gęstą siatkę punktów w przedziale $[a,b]$, oblicza w nich wartości zarówno funkcji $f(x)$, jak i interpolantu $N_n(x)$, a następnie rysuje oba przebiegi na jednym wykresie. Dzięki temu można wizualnie porównać jakość interpolacji.
+
+\subsubsection*{Opis kroków}
+\begin{enumerate}
+    \item Utwórz wektory $x$ i $y$ długości $n+1$.
+    \item Wyznacz równoodległe węzły $x_k = a + k \cdot h$, gdzie $h = \frac{b-a}{n}$, oraz oblicz wartości $y_k = f(x_k)$.
+    \item Oblicz współczynniki Newtona $c$ za pomocą funkcji \texttt{ilorazyRoznicowe}.
+    \item Utwórz gęstą siatkę punktów $xs$ w przedziale $[a,b]$.
+    \item Dla każdego punktu $xs[i]$ oblicz:
+    \begin{itemize}
+        \item wartość wielomianu Newtona $poly[i] = warNewton(x,c,xs[i])$,
+        \item wartość funkcji $func[i] = f(xs[i])$.
+    \end{itemize}
+    \item Narysuj wykres funkcji i wielomianu interpolacyjnego na tym samym rysunku.
+\end{enumerate}
+
+\subsubsection*{Złożoność - zastanowić się jeszcze}
+\begin{itemize}
+    \item Obliczanie ilorazów różnicowych: $O(n^2)$.
+    \item Obliczanie wartości wielomianu w siatce: $O(n \cdot m)$, gdzie $m$ to liczba punktów siatki.
+    \item Pamięciowa: $O(n+m)$, na przechowywanie węzłów, wartości funkcji i wyników interpolacji.
+\end{itemize}
 
 \end{document}
