@@ -197,7 +197,7 @@ n   c                        rank(A) error Gauss              error inv
 \subsection*{Wnioski}
 \noindent Możemy zauważyć, że macierze Hilberta osiągają bardzo duże wartości współczynnika uwarunkowania (parametr \texttt{cond(A)}) już przy stosunkowo niewielkich rozmiarach n. Wysoki wskaźnik uwarunkowania oznacza, że układ $Ax = b$ jest źle uwarunkowany, czyli nawet niewielkie błędy w danych (w macierzy A lub w b) mogą prowadzić do dużych błędów w rozwiązaniu. Eksperymenty pokazują, że możemy to zaobserowować zarówno dla metody eliminacji Gauss'a jak i metody z użyciem odwrotności macierzy. Oznacza to, że numeryczne rozwiązanie układu Hilberta jest trudne do uzyskania z dużą dokładnością.\\
 Dla losowych macierzy z ustalonym współczynnikiem uwarunkowania
-c, błędy względne są małe i podobne dla obu metod. Oznacza to, że algorytmy są stabilne numerycznie dla macierzy dobrze uwarunkowanych.
+c, błędy względne są małe i podobne dla obu metod. Jednak współczynnik ten musi być mały. Wiadomo, że wysoki wskaźnik uwarunkowania w przypadku losowych macierzy od razu sprawia, że zadanie jest źle uwarunkowane. Oznacza to, że algorytmy są stabilne numerycznie jedynie dla macierzy dobrze uwarunkowanych.
 
 \section{Zadanie 4}
 \subsection*{Podpunkt a}
@@ -249,7 +249,7 @@ k    & $z_k$                & $|P(z_k)|$           & $|p(z_k)|$           & $|z_
 \end{tabular}
 
 \subsubsection*{Wnioski}
-Wyliczone miejsca zerowe są bardzo zbliżone do rzeczywistych miejsc zerowych. Jednak po podstawieniu ich z powrotem do wzoru otrzymujemy bardzo rozbieżne wyniki. Jak sama nazwa wskazuje miejsce zerowe to taki argument, dla którego funkcja osiąga wartość 0. Żadna z policzonych $P(z_k), p(z_k)$ nie jest nawet bliska 0. Otrzymujemy wartości od rzędu $10^4$ aż do $10^13$. Dzieje się tak, ponieważ wielomian w postaci naturalnej przechowywany jest niedokładnie z uwagi na ograniczenia arytmetyki Float64. Niektóre współczynniki wielomianu przy niższych potęgach x są dużymi liczbami, których zapis pomija killka cyfr znaczących. Nie bez powodu wielomian jest nazwany złośliwym. Nawet bardzo małe oddalnie od precyzyjnej wartości miejsca zerowego, powoduje ogromne zaburzenia wyniku. Sugeruje to złe uwarunkowanie sposobu obliczania pierwiastków wielomianu.
+Wyliczone miejsca zerowe są bardzo zbliżone do rzeczywistych miejsc zerowych. Jednak po podstawieniu ich z powrotem do wzoru otrzymujemy bardzo rozbieżne wyniki. Jak sama nazwa wskazuje miejsce zerowe to taki argument, dla którego funkcja osiąga wartość 0. Żadna z policzonych $P(z_k), p(z_k)$ nie jest nawet bliska 0. Otrzymujemy wartości od rzędu $10^4$ aż do $10^{13}$. Dzieje się tak, ponieważ wielomian w postaci naturalnej przechowywany jest niedokładnie z uwagi na ograniczenia arytmetyki Float64. Niektóre współczynniki wielomianu przy niższych potęgach x są dużymi liczbami, których zapis pomija killka cyfr znaczących. Nie bez powodu wielomian jest nazwany złośliwym. Nawet bardzo małe oddalnie od precyzyjnej wartości miejsca zerowego, powoduje ogromne zaburzenia wyniku. Sugeruje to złe uwarunkowanie sposobu obliczania pierwiastków wielomianu.
  
 
 \subsection*{Podpunkt b}

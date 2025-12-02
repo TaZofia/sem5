@@ -1,0 +1,181 @@
+\documentclass{article}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+\setlength{\parindent}{0pt}
+
+\title{Sprawozdanie laboratorium lista 4 \\Obliczenia naukowe}
+\author{\normalsize Zofia Tarchalska, indeks: 279699}
+\date{}
+
+\begin{document}
+\maketitle
+\section*{Wstęp do zadań 1-3}
+W pierwszych trzech zadaniach należy zaimplementować algortymy dotyczące interpolacji wielomianowej.
+
+Interpolacja wielomianowa jest jednym z podstawowych narzędzi analizy numerycznej, pozwalającym na przybliżanie funkcji za pomocą wielomianów przechodzących przez zadane punkty. Szczególnie użyteczna jest postać Newtona, w której współczynniki wyznaczane są za pomocą ilorazów różnicowych. Ta reprezentacja jest wygodna obliczeniowo i umożliwia łatwe dodawanie nowych węzłów bez konieczności ponownego wyznaczania całego wielomianu.
+
+W sprawozdaniu rozważymy trzy powiązane ze sobą algorytmy:
+\begin{enumerate}
+    \item Obliczanie ilorazów różnicowych na podstawie wartości funkcji w węzłach interpolacji.
+    \item Wyznaczanie wartości wielomianu Newtona w punkcie $t$ za pomocą uogólnionego algorytmu Hornera, działającego w czasie liniowym $O(n)$.
+    \item Przekształcanie wielomianu Newtona do postaci naturalnej $a_0 + a_1 x + \dots + a_n x^n$, co wymaga czasu $O(n^2)$.
+\end{enumerate}
+
+
+\section*{Zadanie 1}
+
+\subsection*{Algorytm obliczania ilorazów różnicowych}
+
+\subsubsection*{Wejście}
+\begin{itemize}
+    \item Wektor węzłów $x = [x_0, x_1, \dots, x_n]$ długości $n+1$.
+    \item Wektor wartości funkcji $f = [f(x_0), f(x_1), \dots, f(x_n)]$ długości $n+1$.
+\end{itemize}
+
+\subsubsection*{Wyjście}
+\begin{itemize}
+    \item Wektor $fx = [f[x_0], f[x_0,x_1], \dots, f[x_0,\dots,x_n]]$ długości $n+1$, zawierający kolejne ilorazy różnicowe.
+\end{itemize}
+
+\subsubsection*{Idea działania}
+Algorytm oblicza współczynniki dla wielomianu interpolacyjnego Newtona. 
+Zamiast tworzyć tablicę dwuwymiarową, wszystkie obliczenia wykonuje w jednym wektorze, nadpisując jego wartości w kolejnych krokach. 
+Pierwszy element wektora wynikowego jest wartością funkcji w pierwszym węźle, a kolejne elementy powstają poprzez iteracyjne obliczanie ilorazów różnicowych wyższych rzędów.
+
+\subsubsection*{Opis kroków}
+\begin{enumerate}
+    \item Utwórz wektor $fx$ długości $n+1$ i skopiuj do niego wartości funkcji $f(x_i)$.
+    \item Ustal $fx[1] = f(x_0)$.
+    \item Dla każdego rzędu $j = 2, 3, \dots, n+1$:
+    \begin{itemize}
+        \item Przejdź po wektorze od końca do początku.
+        \item Zastąp element $fx[i]$ wartością:
+        
+
+\[
+        fx[i] \gets \frac{fx[i] - fx[i-1]}{x[i] - x[i-j+1]}
+        \]
+
+
+        \item Pierwszy element z danego rzędu odpowiada współczynnikowi Newtona i pozostaje w $fx[j]$.
+    \end{itemize}
+    \item Po zakończeniu pętli wektor $fx$ zawiera wszystkie ilorazy różnicowe.
+\end{enumerate}
+
+\subsubsection*{Złożoność}
+\begin{itemize}
+    \item Czasowa: $O(n^2)$, ponieważ algorytm wykonuje podwójną pętlę.
+    \item Pamięciowa: $O(n)$, ponieważ używany jest tylko jeden wektor długości $n+1$.
+\end{itemize}
+
+\section*{Zadanie 2}
+\subsection*{Algorytm obliczania wartości wielomianu Newtona}
+
+\subsubsection*{Wejście}
+\begin{itemize}
+    \item Wektor węzłów $x = [x_0, x_1, \dots, x_n]$ długości $n+1$.
+    \item Wektor ilorazów różnicowych $fx = [f[x_0], f[x_0,x_1], \dots, f[x_0,\dots,x_n]]$ długości $n+1$.
+    \item Punkt $t \in \mathbb{R}$, w którym należy obliczyć wartość wielomianu interpolacyjnego Newtona.
+\end{itemize}
+
+\subsubsection*{Wyjście}
+\begin{itemize}
+    \item Wartość wielomianu Newtona $N_n(t)$ w punkcie $t$.
+\end{itemize}
+
+\subsubsection*{Idea działania}
+Ponieważ wielomian Newtona jest postaci:
+
+\begin{multline}
+N_n(t) = f[x_0] + f[x_0,x_1](t-x_0) + f[x_0,x_1,x_2](t-x_0)(t-x_1) \\
++ \dots + f[x_0,\dots,x_n](t-x_0)(t-x_1)\dots(t-x_{n-1})
+\end{multline}
+
+Bezpośrednie obliczanie wymagałoby mnożenia coraz dłuższych iloczynów i dodawania kolejnych wyrazów, co prowadzi do kosztu rzędu $O(n^2)$. Uogólniony algorytm Hornera pozwala uniknąć tego problemu, przekształcając obliczenia w prostą procedurę rekurencyjnego „zwijania” wielomianu. 
+
+Zaczynamy od najwyższego współczynnika (ilorazu różnicowego rzędu $n$) i cofamy się w dół, w każdej iteracji doklejając czynnik $(t - x_i)$ oraz dodając współczynnik niższego rzędu. Dzięki temu wielomian jest budowany krok po kroku, bez potrzeby jawnego rozwijania wszystkich iloczynów. 
+
+\subsubsection*{Opis kroków}
+\begin{enumerate}
+    \item Ustaw zmienną pomocniczą $w \gets fx[n+1]$, czyli najwyższy współczynnik.
+    \item Dla $i = n, n-1, \dots, 1$ wykonaj:
+    
+
+\[
+    w \gets w \cdot (t - x[i]) + fx[i].
+    \]
+
+
+    \item Po zakończeniu pętli zmienna $w$ zawiera wartość wielomianu Newtona w punkcie $t$.
+\end{enumerate}
+
+\subsubsection*{Złożoność}
+\begin{itemize}
+    \item Czasowa: $O(n)$, ponieważ wykonujemy dokładnie $n$ kroków.
+    \item Pamięciowa: $O(1)$, ponieważ używana jest tylko jedna zmienna pomocnicza $w$.
+\end{itemize}
+
+\section*{Zadanie 3}
+\subsection*{Algorytm przekształcania wielomianu Newtona do postaci naturalnej}
+
+\subsubsection*{Wejście}
+\begin{itemize}
+    \item Wektor węzłów $x = [x_0, x_1, \dots, x_n]$ długości $n+1$.
+    \item Wektor ilorazów różnicowych $fx = [f[x_0], f[x_0,x_1], \dots, f[x_0,\dots,x_n]]$ długości $n+1$.
+\end{itemize}
+
+\subsubsection*{Wyjście}
+\begin{itemize}
+    \item Wektor współczynników postaci naturalnej $a = [a_0, a_1, \dots, a_n]$, gdzie
+    
+
+\[
+    N_n(x) = a_0 + a_1 x + a_2 x^2 + \dots + a_n x^n.
+    \]
+
+
+\end{itemize}
+
+\subsubsection*{Idea działania}
+Wielomian Newtona zapisany jest w postaci iloczynowej z ilorazami różnicowymi jako współczynnikami. Aby uzyskać jego postać naturalną, należy kolejno rozwijać czynniki $(x - x_i)$ i aktualizować współczynniki wielomianu. Algorytm działa iteracyjnie: zaczyna od najwyższego współczynnika $fx[n+1]$, a następnie w każdej iteracji „dokleja” kolejny czynnik $(x - x_k)$, przesuwając współczynniki w dół i dodając odpowiedni iloraz różnicowy. Dzięki temu po $n$ krokach powstaje pełny wektor współczynników postaci naturalnej.  
+
+\subsubsection*{Opis kroków}
+\begin{enumerate}
+    \item Utwórz wektor $a$ długości $n+1$ i wypełnij zerami.
+    \item Ustaw $a[n+1] \gets fx[n+1]$ (najwyższy współczynnik Newtona).
+    \item Dla $k = n, n-1, \dots, 1$:
+    \begin{enumerate}
+        \item Dla $j = k, k-1, \dots, 1$ wykonaj:
+        
+
+\[
+        a[j] \gets a[j] - x[k] \cdot a[j+1].
+        \]
+
+
+        \item Następnie zaktualizuj:
+        
+
+\[
+        a[k] \gets a[k] + fx[k].
+        \]
+
+
+    \end{enumerate}
+    \item Po zakończeniu pętli wektor $a$ zawiera współczynniki postaci naturalnej.
+\end{enumerate}
+
+\subsubsection*{Złożoność}
+\begin{itemize}
+    \item Czasowa: $O(n^2)$, ponieważ każda z $n$ iteracji wymaga aktualizacji do $n$ współczynników.
+    \item Pamięciowa: $O(n)$, ponieważ przechowywany jest tylko wektor wynikowy $a$.
+\end{itemize}
+
+
+\end{document}
