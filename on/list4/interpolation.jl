@@ -10,7 +10,7 @@ function ilorazyRoznicowe(x::Vector{Float64}, f::Vector{Float64})
         fx[i] = f[i]
     end
     for j in 2:x_len
-        for i in n:-1:j
+        for i in x_len:-1:j
             fx[i] = (fx[i] - fx[i-1])/(x[i]-x[i-j+1])
         end
     end
