@@ -15,7 +15,6 @@ function ilorazyRoznicowe(x::Vector{Float64}, f::Vector{Float64})
         end
     end
     return fx
-    
 end
 
 function warNewton(x::Vector{Float64}, fx::Vector{Float64}, t::Float64)
@@ -29,18 +28,17 @@ function warNewton(x::Vector{Float64}, fx::Vector{Float64}, t::Float64)
 end
 
 function naturalna(x::Vector{Float64}, fx::Vector{Float64})
-    n = length(x) - 1
-    a = zeros(Float64, n + 1)
-
-    a[n + 1] = fx[n + 1]
-    for k in n:-1:1 
-        for j in k:-1:1
-            a[j] = a[j] - x[k] * a[j + 1]         
-        end 
-        a[k] = a[k] + fx[k]        
+    n = length(x)
+    a = zeros(n)
+    a[n] = fx[n]
+    for i in (n-1):-1:1
+        a[i] = fx[i] - x[i] * a[i+1]
+        for j in (i+1):(n-1)
+            a[j] += -x[i] * a[j+1]
+        end
     end
+    return a
 end
-
 
 
 
@@ -51,14 +49,14 @@ function rysujNnfx(f,a::Float64,b::Float64,n::Int,  wezly::Symbol = :rownoodlegl
     h = (b-a)/n
 
     if wezly == :czebyszew
-        for k in 1:(n+1)
-            x[k] = (a+b)/2 + (b-a)/2*cos((2*k+1)*pi/(2*n+2))
-            y[k] = f(x[k])
+        for k in 0:n
+            x[k+1] = (a+b)/2 + (b-a)/2*cos((2*k+1)*pi/(2*n+2))
+            y[k+1] = f(x[k+1])
         end 
     elseif wezly == :rownoodlegle
-        for k in 1:(n+1)
-            x[k] = a + k*h
-            y[k] = f(x[k])
+        for k in 0:n
+            x[k+1] = a + k*h
+            y[k+1] = f(x[k+1])
         end
     else
         println("[ERROR] wrong wezly")
@@ -82,7 +80,6 @@ function rysujNnfx(f,a::Float64,b::Float64,n::Int,  wezly::Symbol = :rownoodlegl
         func[i] = f(xs[i])
     end
     p = plot(xs, [poly func], label=["wielomian" "funkcja"], title="n = $n")
-    display(p)
     return p
 end
 
