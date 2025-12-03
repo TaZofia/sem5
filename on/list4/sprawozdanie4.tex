@@ -6,6 +6,7 @@
 \usepackage[polish]{babel}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{float}
 
 \setlength{\parindent}{0pt}
 
@@ -223,5 +224,142 @@ Aby narysować przebieg funkcji i wielomianu, algorytm tworzy gęstą siatkę pu
 \end{itemize}
 
 \section*{Zadanie 5}
+Celem zadania było wykorzystanie napisanej wcześniej funkcji \texttt{rysujNnfx(f, a, b, n, wezly)} do zaprezentowania na wykresie wyników interpolacji dla funkcji:
+\begin{itemize}
+    \item $f(x) = e^x$ na przedziale $[0, 1]$
+    \item $f(x) = x^2 \cdot sin(x)$ na przedziale $[-1, 1]$
+\end{itemize}
+Stopnie wielomianu: 5, 10, 15. Węzły - równoodległe.
 
+Poniżej znajdują się wykresy dla $f(x) = e^x$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ex5_results/ex5_a_rownoodlegle_n5.png}
+    \caption{n = 5}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ex5_results/ex5_a_rownoodlegle_n10.png}
+    \caption{n = 10}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ex5_results/ex5_a_rownoodlegle_n15.png}
+    \caption{n = 15}
+\end{figure}
+
+A oto wyniki dla $f(x) = x^2 \cdot sin(x)$
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ex5_results/ex5_b_rownoodlegle_n5.png}
+    \caption{n = 5}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ex5_results/ex5_b_rownoodlegle_n10.png}
+    \caption{n = 10}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ex5_results/ex5_b_rownoodlegle_n15.png}
+    \caption{n = 15}
+\end{figure}
+
+\subsection*{Wnioski}
+Możemy zauważyć, że obydwie testowane funckje udaje się bardzo dokładnie interpolować. Wartości wielomianów interpolacyjnych dla każdego ze sprawdzanych stopni (5, 10, 15) niemal praktycznie idealnie pokrywają się z wartościami funkcji na całym przedziale.
+
+\section*{Zadanie 6}
+W tym zadaniu również należało użyć \texttt{rysujNnfx(f, a, b, n, wezly)} jednak tym razem dla funkcji:
+\begin{itemize}
+    \item $f(x) = |x|,\; x \in [-1,1]$
+    \item $f(x) = \dfrac{1}{1+x^2},\; x \in [-5,5]$
+\end{itemize}
+Stopnie wielomianu, tak jak w poprzednim zadaniu: 5, 10, 15. Węzły - równoodległe i Czebyszewa.
+\newpage
+Wyniki dla $f(x) = |x|$
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_a_czebyszew_n5.png}
+        \caption{czebyszew, n = 5}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_a_rownoodlegle_n5.png}
+        \caption{równoodległe, n = 5}
+    \end{minipage}
+
+    \vspace{0.5cm}
+    
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_a_czebyszew_n10.png}
+        \caption{czebyszew, n = 10}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_a_rownoodlegle_n10.png}
+        \caption{równoodległe, n = 10}
+    \end{minipage}
+
+    \vspace{0.5cm}
+
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_a_czebyszew_n15.png}
+        \caption{czebyszew, n = 15}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_a_rownoodlegle_n15.png}
+        \caption{równoodległe, n = 15}
+    \end{minipage}
+\end{figure}
+
+\newpage
+Wyniki dla $f(x) = \dfrac{1}{1+x^2}$
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_b_czebyszew_n5.png}
+        \caption{czebyszew, n = 5}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_b_rownoodlegle_n5.png}
+        \caption{równoodległe, n = 5}
+    \end{minipage}
+
+    \vspace{0.5cm}
+    
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_b_czebyszew_n10.png}
+        \caption{czebyszew, n = 10}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_b_rownoodlegle_n10.png}
+        \caption{równoodległe, n = 10}
+    \end{minipage}
+
+    \vspace{0.5cm}
+
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_b_czebyszew_n15.png}
+        \caption{czebyszew, n = 15}
+    \end{minipage}\hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex6_results/ex6_b_rownoodlegle_n15.png}
+        \caption{równoodległe, n = 15}
+    \end{minipage}
+\end{figure}
+W przeciwieństwie do poprzedniego zadania funckje nie są zbyt dokładnie interpolowane. W przypadku $|x|$ problelem jest nieróżniczkowalność takiej funkcji. Widzimy, że największy problem jest z dokładnym odwzorowaniem ostrego czubka na wykresie wartości bezwzględnej z x. Dla drugiej funkcji zauważamy zwiększenie rozbieżności między funkcją a interpolacją. Jest to tak zwane zjawisko Rungego. Pojawia się ono tylko w przypadku węzłów równoodległych. Zwiększyć dokładność mogłoby pomóc zwiększenie liczby węzłów na krańcach przedziału.
+
+\subsection*{Wnioski}
+Okazuje się, że interpolacja lepiej sprawdza się w przypadku gładkich funkcji np. takich jak w zadaniu 5. Jednak nawet gdy kształt funkcji wydaje się być pożądany, tak jak w podpunkcie b w zadaniu 6, może się okazać, że trzeba również rozsądnie przemyśleć rozstawienie węzłów interpolacji. Zwiększanie stopnia wielomianu w tym wypadku nic nie pomoże, a dokładniejsze wyniki uzyskamy korzystając z innej metody wyznaczania węzłów (w przypadku zadania 6 jest to metoda Czebyszewa).
 \end{document}

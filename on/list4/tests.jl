@@ -1,3 +1,5 @@
+# Zofia Tarchalska
+
 include("interpolation.jl")
 
 using .Interpolation

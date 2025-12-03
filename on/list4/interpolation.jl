@@ -1,3 +1,5 @@
+# Zofia Tarchalska
+
 module Interpolation
 export ilorazyRoznicowe, warNewton, naturalna, rysujNnfx
 using Plots
