@@ -4,6 +4,11 @@ module Interpolation
 export ilorazyRoznicowe, warNewton, naturalna, rysujNnfx
 using Plots
 
+"""
+Oblicza ilorazy różnicowe dla zadanych węzłów interpolacji.
+x : wektor węzłów interpolacji
+f : wektor wartości funkcji w punktach z x 
+"""
 function ilorazyRoznicowe(x::Vector{Float64}, f::Vector{Float64})
 
     x_len = length(x)
@@ -19,6 +24,12 @@ function ilorazyRoznicowe(x::Vector{Float64}, f::Vector{Float64})
     return fx
 end
 
+"""
+Oblicza wartość wielomianu interpolacyjnego w postaci Newtona w punkcie t.
+x : wektor węzłów interpolacji.
+fx : wektor ilorazów różnicowych (wynik funkcji `ilorazyRoznicowe`).
+t : punkt, w którym obliczamy wartość wielomianu.
+"""
 function warNewton(x::Vector{Float64}, fx::Vector{Float64}, t::Float64)
     n = length(x) - 1
 
@@ -29,6 +40,13 @@ function warNewton(x::Vector{Float64}, fx::Vector{Float64}, t::Float64)
     return w
 end
 
+
+"""
+Przekształca wielomian interpolacyjny z postaci Newtona do postaci naturalnej
+(czyli klasycznej sumy współczynników przy kolejnych potęgach x).
+x : wektor węzłów interpolacji.
+fx : wektor ilorazów różnicowych.
+"""
 function naturalna(x::Vector{Float64}, fx::Vector{Float64})
     n = length(x)
     a = zeros(n)
@@ -42,7 +60,16 @@ function naturalna(x::Vector{Float64}, fx::Vector{Float64})
     return a
 end
 
+"""
+Rysuje wykres funkcji `f` oraz jej wielomianu interpolacyjnego Newtona
+dla zadanych węzłów (równoodległych lub Czebyszewa).
 
+f : funkcja, którą interpolujemy.
+a, b : początek i koniec przedziału interpolacji.
+n : stopień wielomianu (liczba węzłów = n+1).
+wezly : sposób wyboru węzłów (`:rownoodlegle` lub `:czebyszew`).
+
+"""
 
 function rysujNnfx(f,a::Float64,b::Float64,n::Int,  wezly::Symbol = :rownoodlegle)
 
