@@ -42,16 +42,29 @@ function naturalna(x::Vector{Float64}, fx::Vector{Float64})
 end
 
 
-function rysujNnfx(f,a::Float64,b::Float64,n::Int)
+
+
+function rysujNnfx(f,a::Float64,b::Float64,n::Int,  wezly::Symbol = :rownoodlegle)
 
     x = zeros(n+1)
     y = zeros(n+1)
     h = (b-a)/n
 
-    for k in 1:(n+1)
-        x[k] = a + k*h
-        y[k] = f(x[k])
+    if wezly == :czebyszew
+        for k in 1:(n+1)
+            x[k] = (a+b)/2 + (b-a)/2*cos((2*k+1)*pi/(2*n+2))
+            y[k] = f(x[k])
+        end 
+    elseif wezly == :rownoodlegle
+        for k in 1:(n+1)
+            x[k] = a + k*h
+            y[k] = f(x[k])
+        end
+    else
+        println("[ERROR] wrong wezly")
+        return
     end
+
 
     c = ilorazyRoznicowe(x, y)
 
