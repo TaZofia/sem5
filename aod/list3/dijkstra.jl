@@ -1,7 +1,7 @@
 module Dijkstra
 using ..Graphs
 using DataStructures
-export dijkstra, dijkstra_for_pair, dijkstra_for_sources, dial_for_sources, radix_heap_solver
+export dijkstra, dijkstra_for_pairs, dijkstra_for_sources, dial_for_sources, dial_for_pairs, radix_heap_solver
 
 function initialize_single_source(graph, start)
     for vertex in graph.all_vertices
@@ -50,32 +50,13 @@ function dijkstra_for_sources(graph, start)
 
     initialize_single_source(graph, start)
 
-    smallest_dist = 0
-    biggest_dist = 0
-
     Q = PriorityQueue{Graphs.Node, Float64}()
     for v in graph.all_vertices
         enqueue!(Q, v, v.dist)        
     end
 
-    first_iteration = dequeue!(Q)           # dla pierwszego wierzchołka, czyli startowego. Tej najkrótszej ścieżki nie bierzemy do rozważań
-    for (vertex, weight) in first_iteration.adj_list 
-        relax(min_vertex, vertex, weight) 
-        if haskey(Q, vertex)
-            Q[vertex] = vertex.dist
-        end             
-    end
-
     while !isempty(Q)
         min_vertex = dequeue!(Q)
-
-        if min_vertex.dist < smallest_dist
-            smallest_dist = min_vertex.dist
-        end
-        if min_vertex.dist > biggest_dist
-            biggest_dist = min_vertex.dist
-        end             
-
         for (vertex, weight) in min_vertex.adj_list 
             relax(min_vertex, vertex, weight) 
             if haskey(Q, vertex)
@@ -87,11 +68,11 @@ function dijkstra_for_sources(graph, start)
     end_time = time_ns()
     elapsed_time = (end_time - start_time)
 
-    return smallest_dist, biggest_dist, elapsed_time
+    return elapsed_time
 end
 
 
-function dijkstra_for_pair(graph, start, finish)
+function dijkstra_for_pairs(graph, start, finish)
 
     initialize_single_source(graph, start)
     cost = 0
@@ -119,6 +100,7 @@ function dijkstra_for_pair(graph, start, finish)
 end
 
 function dial_for_sources(graph, start, biggest_weight)
+    start_time = time_ns()
     n = length(graph.all_vertices)
     max_distance = biggest_weight*n
 
@@ -162,8 +144,10 @@ function dial_for_sources(graph, start, biggest_weight)
 
         current += 1
     end
+    end_time = time_ns()
+    elapsed_time = (end_time - start_time)
 
-    return graph
+    return elapsed_time
 end
 
 # needs testing 
@@ -223,6 +207,7 @@ mutable struct Item
 end
 
 function radix_heap_solver(graph::Graphs.Graph, source::Graphs.Node; target::Union{Nothing, Graphs.Node}=nothing)
+    start_time = time_ns()
     # inicjalizacja dystansów
     for v in graph.all_vertices
         v.dist = typemax(Int)
@@ -295,7 +280,8 @@ function radix_heap_solver(graph::Graphs.Graph, source::Graphs.Node; target::Uni
             end
 
             if target !== nothing && u == target
-                return graph
+                cost = u.dist
+                return cost
             end
 
             for (v, w) in u.adj_list
@@ -310,8 +296,10 @@ function radix_heap_solver(graph::Graphs.Graph, source::Graphs.Node; target::Uni
             end
         end
     end
+    end_time = time_ns()
+    elapsed_time = (end_time - start_time)
 
-    return graph
+    return elapsed_time
 end
 
 
