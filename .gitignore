@@ -17,3 +17,12 @@ jftt/list3/ex1/calculator.tab.c
 jftt/list3/ex1/calculator.tab.h
 jftt/list3/ex1/emaple.txt
 jftt/list3/ex1/lex.yy.c
+
+aod/list3/results/
+aod/list1/aod_testy1
+
+
+*.log
+*.fls
+*.aux
+*.fdb_latexmk
