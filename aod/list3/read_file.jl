@@ -7,8 +7,8 @@ function read_graph_from_file(filename)
     graph = Graphs.Graph([])
     number_of_vertices = 0
     number_of_edges = 0
-    biggest_weight = 0
-    smallest_weight = 0
+    biggest_weight = -1                 # na pewno krawędź o największym koszcie będzie miała koszt wyższy niż -1
+    smallest_weight = typemax(Int)      # na pewno krawędź o najmniejszym koszcie nie będzie miała kosztu większego niż typemax
 
     for line in eachline(filename)
 
@@ -26,13 +26,8 @@ function read_graph_from_file(filename)
             end
         end
 
-        
-        
         from_vertex = 0
         to_vertex = 0
-        weight = 0
-        biggest_weight = weight
-        smallest_weight = weight
 
         if line[1] == 'a'  
             splitted_line = split(line)

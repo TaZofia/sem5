@@ -68,7 +68,7 @@ function dijkstra_for_sources(graph, start)
     end_time = time_ns()
     elapsed_time = (end_time - start_time)
 
-    return elapsed_time
+    return elapsed_time / 1e6
 end
 
 
@@ -147,7 +147,7 @@ function dial_for_sources(graph, start, biggest_weight)
     end_time = time_ns()
     elapsed_time = (end_time - start_time)
 
-    return elapsed_time
+    return elapsed_time / 1e6
 end
 
 # needs testing 
@@ -240,7 +240,7 @@ function radix_heap_solver(graph::Graphs.Graph, source::Graphs.Node; target::Uni
         end
 
         if bucket_idx > 1
-            # 1) min over stored keys
+            # min over stored keys
             min_key = typemax(Int)
             for it in buckets[bucket_idx]
                 if it.key < min_key
@@ -249,12 +249,12 @@ function radix_heap_solver(graph::Graphs.Graph, source::Graphs.Node; target::Uni
             end
             last_dist = min_key
 
-            # 2) wyciągamy kubełek
+            # wyciągamy kubełek
             move = copy(buckets[bucket_idx])
             empty!(buckets[bucket_idx])
             size_count -= length(move)
 
-            # 3) re-bucketujemy ważne wpisy
+            # re-bucketujemy ważne wpisy
             for it in move
                 u = it.u
                 k = it.key
@@ -299,7 +299,7 @@ function radix_heap_solver(graph::Graphs.Graph, source::Graphs.Node; target::Uni
     end_time = time_ns()
     elapsed_time = (end_time - start_time)
 
-    return elapsed_time
+    return elapsed_time / 1e6
 end
 
 
