@@ -1,4 +1,4 @@
-\\aod\\list1\\aod_testy1
+
 jftt/list2/ex1/lex.yy.c
 .gitignore
 jftt/list2/ex1/test.l
@@ -23,6 +23,15 @@ aod/list1/aod_testy1/
 aod/list1/aod_testy_moje/
 aod/list1/dot_files_zad1/
 aod/list1/zad1/dot_files2/
+aod/list1/.idea
+aod/.idea
+
+
+jftt/.idea
+jftt/list1/.idea
+
+**/.idea/
+
 *.exe
 
 *.gz
