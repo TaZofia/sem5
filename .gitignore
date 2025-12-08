@@ -19,9 +19,12 @@ jftt/list3/ex1/emaple.txt
 jftt/list3/ex1/lex.yy.c
 
 aod/list3/results/
-aod/list1/aod_testy1
+aod/list1/aod_testy1/
+aod/list1/aod_testy_moje/
+aod/list1/dot_files_zad1/
+*.exe
 
-
+*.gz
 *.log
 *.fls
 *.aux
