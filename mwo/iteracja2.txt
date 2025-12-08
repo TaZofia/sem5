@@ -1,6 +1,0 @@
-W drugiej iteracji wykonano:
-1. Utworzenie animacji w programie Blender. Animacja to obracająca się kostka sześcienna.
-2. Napisanie skryptu przetwarzającego animację na grupę punktów w poszczególnych klatkach.
-3. Połączenie pliku zawierającego koordynaty punktów wraz z programem odpowiadającym za przeprowadzanie symulacji.
-
-Brak planowanej kolejnej iteracji ze względu na osiągnięcie oczekiwanych rezultatów w tym sprincie.
