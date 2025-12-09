@@ -28,7 +28,7 @@ end
 
 
 function create_result_file_sources(data_filename, source_filename, algorithm_name, min_cost, max_cost, avg_time, number_of_vertices, number_of_edges, result_filename)
-    folder = ".\\results\\sources"
+    folder = "./results/sources"
     path = joinpath(folder, result_filename)
     
     open(path, "w") do io
@@ -41,7 +41,7 @@ function create_result_file_sources(data_filename, source_filename, algorithm_na
 end
 
 function create_result_file_pairs(data_filename, pair_file, algorithm_name, min_cost, max_cost, number_of_vertices, number_of_edges, costs, result_filename)
-    folder = ".\\results\\pairs"
+    folder = "./results/pairs"
 
     path = joinpath(folder, result_filename)
     
