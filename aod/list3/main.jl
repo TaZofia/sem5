@@ -86,6 +86,10 @@ function main()
     algorithm_name = ARGS[1]
 
     if flag2 == "-ss"
+        if !endswith(file_src_or_pair, ".ss")
+            println("[ERROR] Wrong file format. Should be <filename>.ss")
+        end
+
         sources = read_sources(file_src_or_pair)
         if algorithm_name == "dijkstra"
             all_time = 0
@@ -129,6 +133,11 @@ function main()
 
 
     elseif flag2 == "-p2p"
+
+        if !endswith(file_src_or_pair, ".p2p")
+            println("[ERROR] Wrong file format. Should be <filename>.p2p")
+        end
+
         pairs = read_pair(file_src_or_pair)
         
         if algorithm_name == "dijkstra"
