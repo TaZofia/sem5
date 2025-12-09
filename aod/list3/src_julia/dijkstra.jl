@@ -115,38 +115,37 @@ function dijkstra_for_pairs(graph, start, finish)
     end
 end
 
-function dial_for_sources(graph, start, biggest_weight)
+function dial_for_pairs(graph, start, finish, W)
     try
-        start_time = time_ns()
-        n = length(graph.all_vertices)
-        max_distance = biggest_weight*n
-
         initialize_single_source(graph, start)
 
-        buckets = [Node[] for _ in 1:(max_distance+1)]
+        buckets = [Node[] for _ in 1:(W+1)]
 
-        # start in bucket 0 (index = dist+1)
         push!(buckets[1], start)
-
         current = 0
-        while current <= max_distance
-            bucket = buckets[current+1]
-            
-            while !isempty(bucket)
-                u = pop!(bucket)
+
+        while true
+            while isempty(buckets[current+1])
+                current = (current + 1) % (W+1)
+            end
+
+            while !isempty(buckets[current+1])
+                u = pop!(buckets[current+1])
+
+                if u == finish
+                    distance = u.dist
+                    return distance                    
+                end
 
                 for (v, w) in u.adj_list
-                    
-
-                    alt = u.dist + w
-                    if alt < v.dist
-                        old = v.dist
-                        v.dist = alt
+                    newDist = u.dist + w
+                    if newDist < v.dist
+                        oldDist = v.dist
+                        v.dist = newDist
                         v.parent = u
 
-                        # remove from old bucket if not INF
-                        if old != typemax(Int)
-                            old_idx = old + 1
+                        if oldDist != typemax(Int)
+                            old_idx = (oldDist % (W+1)) + 1
                             b = buckets[old_idx]
                             pos = findfirst(==(v), b)
                             if pos !== nothing
@@ -154,63 +153,57 @@ function dial_for_sources(graph, start, biggest_weight)
                             end
                         end
 
-                        push!(buckets[alt+1], v)
+                        new_idx = (newDist % (W+1)) + 1
+                        push!(buckets[new_idx], v)
                     end
                 end
             end
 
-            current += 1
+            if all(isempty, buckets)
+                break
+            end
         end
-        end_time = time_ns()
-        elapsed_time = (end_time - start_time)
 
-        return elapsed_time / 1e6
     catch e
         if isa(e, OutOfMemoryError)
             @warn "Out of memory in dial_for_sources, skipping..."
-            return nothing   
+            return nothing
         else
             rethrow(e)
         end
     end
 end
 
-# needs testing 
-function dial_for_pairs(graph, start, finish, biggest_weight)
+
+
+function dial_for_sources(graph, start, W)
     try
-        n = length(graph.all_vertices)
-        max_distance = biggest_weight*n
+        start_time = time_ns()
 
         initialize_single_source(graph, start)
 
-        buckets = [Node[] for _ in 1:(max_distance+1)]
+        buckets = [Node[] for _ in 1:(W+1)]
 
-        # start in bucket 0 (index = dist+1)
         push!(buckets[1], start)
-
         current = 0
-        while current <= max_distance
-            bucket = buckets[current+1]
-            
-            while !isempty(bucket)
-                u = pop!(bucket)
 
-                if u == finish
-                    return u.dist
-                end
+        while true
+            while isempty(buckets[current+1])
+                current = (current + 1) % (W+1)
+            end
+
+            while !isempty(buckets[current+1])
+                u = pop!(buckets[current+1])
 
                 for (v, w) in u.adj_list
-                    
-
-                    alt = u.dist + w
-                    if alt < v.dist
-                        old = v.dist
-                        v.dist = alt
+                    newDist = u.dist + w
+                    if newDist < v.dist
+                        oldDist = v.dist
+                        v.dist = newDist
                         v.parent = u
 
-                        # remove from old bucket if not INF
-                        if old != typemax(Int)
-                            old_idx = old + 1
+                        if oldDist != typemax(Int)
+                            old_idx = (oldDist % (W+1)) + 1
                             b = buckets[old_idx]
                             pos = findfirst(==(v), b)
                             if pos !== nothing
@@ -218,17 +211,25 @@ function dial_for_pairs(graph, start, finish, biggest_weight)
                             end
                         end
 
-                        push!(buckets[alt+1], v)
+                        new_idx = (newDist % (W+1)) + 1
+                        push!(buckets[new_idx], v)
                     end
                 end
             end
 
-            current += 1
+            if all(isempty, buckets)
+                break
+            end
         end
+
+        end_time = time_ns()
+        elapsed_time = (end_time - start_time)
+        return elapsed_time / 1e6
+
     catch e
         if isa(e, OutOfMemoryError)
-            @warn "Out of memory in dial_for_pairs, skipping..."
-            return nothing   
+            @warn "Out of memory in dial_for_sources, skipping..."
+            return nothing
         else
             rethrow(e)
         end

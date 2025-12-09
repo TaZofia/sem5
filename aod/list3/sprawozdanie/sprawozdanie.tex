@@ -1,0 +1,402 @@
+\documentclass{article}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+
+\setlength{\parindent}{0pt}
+
+\title{Sprawozdanie lista3 \\AOD}
+\author{\normalsize Zofia Tarchalska, indeks: 279699}
+\date{}
+
+\begin{document}
+\maketitle
+
+
+\section{Wstęp}
+Na laboratorium numer 3 należało zaimplementować 3 algorytmy:
+\begin{itemize}
+    \item algorytm (\texttt{dijkstry})
+    \item algorytm (\texttt{diala})
+    \item algorytm (\texttt{radix heap})
+\end{itemize}
+
+Służą one do znajdowania najkrótszych ścieżek w grafie. Problem ten polega na tym, że dla grafu skierowanego $G = (V, E)$, w którym każdy łuk ma przypisaną jakąś wagę, chcemy znaleźć najkrótszą ścieżkę pomiędzy źródłem (ustalonym), a pozostałymi wierzchołkami $V \setminus \{s\}$.
+
+Mając dwa wierzchołki, powiedzmy $u$ i $v$, ścieżkę 
+\[
+p = (v_1, v_2, \ldots, v_n), \quad v_1 = u,\; v_n = v
+\]
+nazywamy najkrótszą, gdy jej sumaryczna waga
+\[
+W(p) = \sum_{i=1}^{n-1} w(v_i, v_{i+1})
+\tag{1}
+\]
+jest możliwie najmniejsza.
+
+\section{Algorytm Dijkstry}
+
+Algorytm Dijkstry służy do wyznaczania najkrótszych ścieżek ze źródła $s$ do wszystkich pozostałych wierzchołków w grafie skierowanym o nieujemnych wagach krawędzi. 
+Podstawową ideą jest iteracyjne wybieranie wierzchołka o najmniejszej odległości od źródła (utrzymywanej w strukturze priorytetowej), a następnie relaksacja wszystkich krawędzi wychodzących z tego wierzchołka. 
+Proces powtarza się aż do opróżnienia kolejki priorytetowej.
+
+\subsection{Opis działania}
+\begin{enumerate}
+    \item Inicjalizujemy odległości: dla źródła $s$ ustawiamy $d[s] = 0$, a dla pozostałych $d[v] = \infty$.
+    \item Umieszczamy wszystkie wierzchołki w kolejce priorytetowej $Q$, kluczem jest bieżąca wartość $d[v]$.
+    \item Dopóki $Q$ nie jest pusta:
+    \begin{enumerate}
+        \item Wyjmujemy wierzchołek $u$ o najmniejszej wartości $d[u]$.
+        \item Dla każdej krawędzi $(u,v)$ o wadze $w$ wykonujemy relaksację:
+        
+
+\[
+            \text{jeśli } d[v] > d[u] + w \text{ to ustaw } d[v] \leftarrow d[u] + w.
+        \]
+
+
+        \item Jeśli $d[v]$ zostało zmienione, aktualizujemy klucz w kolejce priorytetowej.
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Pseudokod}
+\begin{algorithm}[H]
+\caption{Dijkstra($G, s$)}
+\begin{algorithmic}[1]
+\State \textbf{for} each $v \in V[G]$ \textbf{do}
+    \State \hspace{0.5cm} $d[v] \gets \infty$
+    \State \hspace{0.5cm} $p[v] \gets \text{NIL}$
+\State $d[s] \gets 0$
+\State $Q \gets V[G]$ \Comment{kolejka priorytetowa według $d[v]$}
+\While{$Q \neq \emptyset$}
+    \State $u \gets \text{Extract-Min}(Q)$
+    \For{each $(u,v) \in E[G]$}
+        \If{$d[v] > d[u] + w(u,v)$}
+            \State $d[v] \gets d[u] + w(u,v)$
+            \State $p[v] \gets u$
+            \State \text{Decrease-Key}($Q,v,d[v]$)
+        \EndIf
+    \EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Złożoność czasowa}
+Złożoność algorytmu zależy od użytej struktury danych:
+
+Z kolejką priorytetową opartą na kopcu binarnym (właśnie tak jest zaimplementowana ta z pakietu \texttt{DataStructures} w Julia): 
+
+\[
+        O((V+E)\log V),
+\]
+
+gdzie $V$ to liczba wierzchołków, a $E$ liczba krawędzi. Wyjmowanie najmniejszego elementu ma złożoność $O(1)$.
+
+\section{Algorytm Diala}
+
+Algorytm Diala jest modyfikacją algorytmu Dijkstry, która wykorzystuje fakt, że wagi krawędzi są ograniczone do przedziału $[0, W]$. 
+Dzięki temu możemy usprawnić wybór następnego wierzchołka poprzez zastosowanie cyklicznej listy kubełków o długości $W+1$. 
+Każdy kubełek $j$ przechowuje wierzchołki o etykietach tymczasowych równych $j, j+(W+1), j+2(W+1), \dots$. 
+Ponieważ kubełki są opróżniane w kolejności cyklicznej, etykiety nie nakładają się na siebie.
+
+\subsection{Opis działania}
+\begin{enumerate}
+    \item Inicjalizujemy odległości: $d[s] = 0$, dla pozostałych $d[v] = \infty$.
+    \item Tworzymy cykliczną listę kubełków o długości $W+1$.
+    \item Umieszczamy źródło $s$ w kubełku $0$.
+    \item Utrzymujemy wskaźnik \texttt{current}, wskazujący bieżący kubełek.
+    \item Dopóki istnieją nieprzetworzone wierzchołki:
+    \begin{enumerate}
+        \item Przesuwamy \texttt{current} cyklicznie, aż trafimy na niepusty kubełek.
+        \item Opróżniamy bieżący kubełek:
+        \begin{enumerate}
+            \item Pobieramy wierzchołek $u$.
+            \item Dla każdej krawędzi $(u,v)$ o wadze $w$ obliczamy $newDist = d[u] + w$.
+            \item Jeśli $newDist < d[v]$, aktualizujemy $d[v] \gets newDist$ i przenosimy $v$ do kubełka $newDist \bmod (W+1)$.
+        \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+
+
+\subsection{Pseudokod}
+\begin{algorithm}[H]
+\caption{Dial($G, s, W$)}
+\begin{algorithmic}[1]
+\For{each $v \in V[G]$}
+    \State $d[v] \gets \infty$
+    \State $p[v] \gets \text{NIL}$
+\EndFor
+\State $d[s] \gets 0$
+\State buckets $\gets$ cyclic list of $W+1$ empty lists
+\State insert $s$ into buckets[0]
+\State current $\gets 0$
+\While{true}
+    \While{buckets[current] is empty}
+        \State current $\gets (current + 1) \bmod (W+1)$
+    \EndWhile
+    \While{buckets[current] not empty}
+        \State $u \gets$ remove element from buckets[current]
+        \For{each $(u,v) \in E[G]$ with weight $w$}
+            \State $newDist \gets d[u] + w$
+            \If{$newDist < d[v]$}
+                \State remove $v$ from buckets[$d[v] \bmod (W+1)$]
+                \State $d[v] \gets newDist$
+                \State $p[v] \gets u$
+                \State add $v$ to buckets[$newDist \bmod (W+1)$]
+            \EndIf
+        \EndFor
+    \EndWhile
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Złożoność czasowa}
+Każda krawędź jest rozpatrywana dokładnie raz, a każdy wierzchołek może być przenoszony maksymalnie $W$ razy.  
+Zatem złożoność czasowa wynosi:
+
+\[
+    O(E + V W).
+\]
+
+Dla dużych wartości $W$ niestety jego wydajność spada w porównaniu z klasycznym algorytmem Dijkstry.
+
+\section{Algorytm Radix Heap}
+Algorytm Dijkstry można przyspieszyć, gdy wagi krawędzi są nieujemnymi liczbami całkowitymi, poprzez zastosowanie specjalnej struktury danych zwanej Radix Heap.
+
+Radix Heap jest wariantem kolejki priorytetowej, który grupuje elementy w kubełkach w zależności od wartości ich klucza (odległości). 
+Dzięki temu operacje \texttt{Extract-Min} oraz \texttt{Decrease-Key} mogą być wykonywane szybciej niż w klasycznym kopcu binarnym. Jest to lepsze podejście do sposobu działania Diala.
+
+\subsection{Opis działania}
+\begin{enumerate}
+    \item Inicjalizujemy odległości: $d[s] = 0$, dla pozostałych $d[v] = \infty$.
+    \item Tworzymy tablicę kubełków (np. 64 kubełki dla liczb całkowitych 64-bitowych).
+    \item Umieszczamy źródło $s$ w kubełku odpowiadającym wartości $0$.
+    \item Dopóki kolejka nie jest pusta:
+    \begin{enumerate}
+        \item Znajdujemy pierwszy niepusty kubełek.
+        \item Jeśli jest to kubełek $0$, wyjmujemy elementy i wykonujemy relaksację ich krawędzi.
+        \item Jeśli jest to kubełek $i > 0$, znajdujemy minimalny klucz w tym kubełku, ustawiamy go jako nową wartość \texttt{last\_dist}, a następnie przenosimy elementy do odpowiednich kubełków zgodnie z funkcją indeksującą.
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Złożoność czasowa}
+Dzięki zastosowaniu Radix Heap, złożoność czasowa algorytmu wynosi:
+
+\[
+    O(E + V),
+\]
+  
+W praktyce oznacza to, że algorytm działa w czasie bliskim liniowemu względem wielkości grafu.
+
+\subsection{Pseudokod}
+\begin{algorithm}[H]
+\caption{Dijkstra z Radix Heap($G, s$)}
+\begin{algorithmic}[1]
+\For{each $v \in V[G]$}
+    \State $d[v] \gets \infty$
+    \State $p[v] \gets \text{NIL}$
+\EndFor
+\State $d[s] \gets 0$
+\State utwórz tablicę kubełków $B[0..64]$
+\State wstaw $(0,s)$ do $B[0]$
+\State last\_dist $\gets 0$
+\While{kolejka niepusta}
+    \State znajdź najmniejszy indeks $i$ taki, że $B[i]$ niepusty
+    \If{$i > 0$}
+        \State min\_key $\gets \min\{\, \text{klucze w } B[i] \,\}$
+        \State last\_dist $\gets$ min\_key
+        \State przenieś elementy z $B[i]$ do odpowiednich kubełków
+    \Else
+        \While{$B[0]$ niepusty}
+            \State $(k,u) \gets$ usuń element z $B[0]$
+            \If{$k = d[u]$}
+                \For{każde $(u,v) \in E[G]$ o wadze $w$}
+                    \State $newDist \gets d[u] + w$
+                    \If{$newDist < d[v]$}
+                        \State $d[v] \gets newDist$
+                        \State $p[v] \gets u$
+                        \State $j \gets$ indeks kubełka dla $newDist$ względem last\_dist
+                        \State wstaw $(newDist,v)$ do $B[j]$
+                    \EndIf
+                \EndFor
+            \EndIf
+        \EndWhile
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\section{Wyniki doświadczenia dla określonych źródeł}
+Należało przprowadzić doświadczenia dla określonych rodzin grafów:
+\begin{itemize}
+    \item Long-C i Long-n
+    \item Random4-n i Random4-C
+    \item Square-C, Square-n
+    \item USA-Road-d
+\end{itemize}
+Dla każdej z wymienionych powyżej rodzin obliczamy czas znajdowania najkrótszych ścieżek dla źródła będącego wierzchołkiem o indeksie 1 oraz dla 5 losowo wybranch źródeł (wynik jest średnią czasu).
+
+Ponieważ algorytm Diala jest bardzo wymagający pamięciowo, rozwiązanie powyższych problemów nie było możliwe dla niektórych grafów. Poniżej zamieszczone są wykresy z wynikiami eksperymentów.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/Random4-n_plot.png}
+    \caption{Random4-n}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/Random4-C_plot.png}
+    \caption{Random4-C}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/Long-n_plot.png}
+    \caption{Long-n}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/Long-C_plot.png}
+    \caption{Long-C}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/Square-n_plot.png}
+    \caption{Square-n}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/Square-C_plot.png}
+    \caption{Square-C}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/USA-Road-d-5-sources_plot.png}
+    \caption{USA-Road-d (5 sources)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./../plots/USA-Road-d_single-source_plot.png}
+    \caption{USA-Road-d (single source)}
+\end{figure}
+
+
+\section{Wnioski}
+Algorytmy Dijkstry i RadixHeap dają zbliżone czasy działania, przy czym RadixHeap zwykle
+jest nieco szybszy, z wyjątkiem rodzin Long-C i Long-n. W przypadku grafów z różnymi wagami
+krawędzi (warianty „-C”), szczególnie Square-C, algorytm Diala może być bardzo efektywny
+dla małych wartości wag, czasem przewyższając pozostałe metody. Jednak wraz ze wzrostem
+wag jego wydajność gwałtownie spada i czasy obliczeń stają się wielokrotnie większe. Tymczasem
+Dijkstra i RadixHeap utrzymują stabilny czas działania niezależnie od wartości najdroższej krawędzi, co czyni je
+lepszym wyborem dla grafów o nieznanych lub zróżnicowanych parametrach. Dial sprawdza się
+tylko przy niewielkich kosztach, natomiast dla rodzin takich jak Long-C przy dużych wagach
+jego czas wykonania może sięgać minut lub godzin, podczas gdy pozostałe algorytmy kończą
+obliczenia w ułamku sekundy.
+
+\section{Wyniki - najkrótsze ścieżki dla największych grafów}
+W tej sekcji zajmieny się największymi grafami dla każdej rodziny. Celem zadania było wyznaczenie kosztu najkrótszej ścieżki pomiędzy wierzchołkiem o najmniejszym i największym indeksie oraz średnich czasów dla 4 losowo wybranych par.
+
+
+\begin{table}[H]
+    \centering
+    \caption{Porównanie czasów działania algorytmów}
+    \begin{tabular}{llllll}
+    \toprule
+    Rodzina & Algorytm & Start & Koniec & Odległość & Czas [ms] \\
+    \midrule
+    Long-C   & Dijkstra   & 1 & 1048576 & 1308259008765 & 28.04 \\
+    Long-C   & Dial       & -- & -- & -- & Timeout \\
+    Long-C   & RadixHeap  & 1 & 1048576 & 1308259008765 & 31.60 \\
+    \midrule
+    Long-n   & Dijkstra   & 1 & 2097152 & 31336751771 & 291.20 \\
+    Long-n   & Dial       & 1 & 2097152 & 31336751771 & 95545.73 \\
+    Long-n   & RadixHeap  & 1 & 2097152 & 31336751771 & 308.11 \\
+    \midrule
+    Random4-C & Dijkstra  & 1 & 1048576 & 3471241820 & 139.37 \\
+    Random4-C & Dial      & -- & -- & -- & Timeout \\
+    Random4-C & RadixHeap & 1 & 1048576 & 3471241820 & 109.35 \\
+    \midrule
+    Random4-n & Dijkstra  & 1 & 2097152 & 9051281 & 547.91 \\
+    Random4-n & Dial      & 1 & 2097152 & 9051281 & 860.50 \\
+    Random4-n & RadixHeap & 1 & 2097152 & 9051281 & 371.79 \\
+    \midrule
+    Square-C  & Dijkstra  & 1 & 1048576 & 122219500320 & 105.87 \\
+    Square-C  & Dial      & -- & -- & -- & Timeout \\
+    Square-C  & RadixHeap & 1 & 1048576 & 122219500320 & 112.87 \\
+    \midrule
+    Square-n  & Dijkstra  & 1 & 2096704 & 714640488 & 257.69 \\
+    Square-n  & Dial      & 1 & 2096704 & 714640488 & 2750.22 \\
+    Square-n  & RadixHeap & 1 & 2096704 & 714640488 & 255.78 \\
+    \midrule
+    USA-road-d & Dijkstra & 1 & 23947347 & 23228284 & 3253.20 \\
+    USA-road-d & Dial     & 1 & 23947347 & 23228284 & 2860.24 \\
+    USA-road-d & RadixHeap& 1 & 23947347 & 23228284 & 2845.07 \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+
+    \begin{table}[H]
+    \centering
+    \caption{Wyniki dla losowych ścieżek}
+    \begin{tabular}{lll}
+    \toprule
+    Rodzina & Algorytm & Czas [ms] \\
+    \midrule
+    Long-C   & Dijkstra   & 114.98 \\
+    Long-C   & Dial       & Timeout \\
+    Long-C   & RadixHeap  & 160.58 \\
+    \midrule
+    Long-n   & Dijkstra   & 216.61 \\
+    Long-n   & Dial       & 117392.49 \\
+    Long-n   & RadixHeap  & 265.49 \\
+    \midrule
+    Random4-C & Dijkstra  & 210.35 \\
+    Random4-C & Dial      & Timeout \\
+    Random4-C & RadixHeap & 145.75 \\
+    \midrule
+    Random4-n & Dijkstra  & 487.54 \\
+    Random4-n & Dial      & 992.31 \\
+    Random4-n & RadixHeap & 322.88 \\
+    \midrule
+    Square-C  & Dijkstra  & 129.67 \\
+    Square-C  & Dial      & Timeout \\
+    Square-C  & RadixHeap & 145.99 \\
+    \midrule
+    Square-n  & Dijkstra  & 239.23 \\
+    Square-n  & Dial      & 2300.17 \\
+    Square-n  & RadixHeap & 219.63 \\
+    \midrule
+    USA-road-d & Dijkstra & 2272.93 \\
+    USA-road-d & Dial     & 2134.75 \\
+    USA-road-d & RadixHeap& 2036.93 \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+
+\section{Wnioski}
+Poza rodziną USA-road-d, wszędzie tam, gdzie algorytm Dial kończy obliczenia w rozsądnym
+czasie, pozostaje najwolniejszy spośród trzech porównywanych metod. Szczególnie wyraźnie
+widać to w rodzinie Long-n, gdzie rosnące wartości $C$ są powiązane ze wzrostem liczby
+wierzchołków. W większości przypadków czasy działania Dijkstry i RadixHeap są zbliżone,
+z wyjątkiem rodziny Long-C, gdzie dla ścieżki rozpoczynającej się w pierwszym wierzchołku
+oba algorytmy były kilkukrotnie szybsze. Warto też zauważyć, że w rodzinie USA-road-d,
+charakteryzującej się stosunkowo niewielkimi wagami krawędzi, Dial wypada lepiej niż Dijkstra,
+choć nadal ustępuje RadixHeap, który pozostaje najszybszy. Ogromne wagi krawędzi od razu dyskwalifikują algorytm Diala. Wobec tego gdy wagi są nam nieznane lepiej używać np. klasycznej Dijkstry. Gdy znamy ograniczenie na wagi krawędzi możemy pokusić się o RadixHeap, ponieważ potrafi być szybszy od Dijkstry.
+
+\end{document}
