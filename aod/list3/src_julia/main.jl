@@ -1,6 +1,7 @@
 include("my_project.jl")
 using .MyProject
 
+
 function read_sources(filename)
     sources = Int[]
     for line in eachline(filename)
@@ -27,21 +28,25 @@ function read_pair(filename)
 end
 
 
-function create_result_file_sources(data_filename, source_filename, algorithm_name, min_cost, max_cost, avg_time, number_of_vertices, number_of_edges, result_filename)
-    folder = "./results/sources"
+function create_result_file_sources(data_filename, source_filename, algorithm_name, min_cost, max_cost, avg_time, number_of_vertices, number_of_edges, result_filename, error_flag)
+    folder = "./../results/for_sources"
     path = joinpath(folder, result_filename)
     
     open(path, "w") do io
         write(io, "p res sp ss $(algorithm_name)\n")
         write(io, "f $(data_filename) $(source_filename)\n")
         write(io, "g $(number_of_vertices) $(number_of_edges) $(min_cost) $(max_cost)\n")
-        write(io, "t $(avg_time)")
+        if error_flag
+            write(io, "OutOfMemoryError")
+        else
+            write(io, "t $(avg_time)")
+        end
     end
     
 end
 
-function create_result_file_pairs(data_filename, pair_file, algorithm_name, min_cost, max_cost, number_of_vertices, number_of_edges, costs, result_filename)
-    folder = "./results/pairs"
+function create_result_file_pairs(data_filename, pair_file, algorithm_name, min_cost, max_cost, number_of_vertices, number_of_edges, costs, result_filename, error_flag)
+    folder = "./../results/for_pairs"
 
     path = joinpath(folder, result_filename)
     
@@ -50,8 +55,12 @@ function create_result_file_pairs(data_filename, pair_file, algorithm_name, min_
         write(io, "p res sp p2p $(number_of_pairs) $(algorithm_name)\n")
         write(io, "f $(data_filename) $(pair_file)\n")
         write(io, "g $(number_of_vertices) $(number_of_edges) $(min_cost) $(max_cost)\n")
-        for ((from, to), cost) in costs
-            write(io, "d $from $to $cost\n") 
+        if error_flag
+            write(io, "OutOfMemoryError")
+        else
+            for ((from, to), cost) in costs
+                write(io, "d $from $to $cost\n") 
+            end
         end
     end
     
@@ -72,6 +81,8 @@ function main()
     number_of_edges = 0
     max_edge_cost = 0
     min_edge_cost = 0
+
+    error_flag = false
 
     if flag1 == "-d"
         file_with_data = ARGS[3]
@@ -96,27 +107,48 @@ function main()
             for src in sources
                 start_node = graph.all_vertices[src]        # src to Integer a potrzebuję obiektu Node
                 time = dijkstra_for_sources(graph, start_node)
-                all_time += time
+                
+                if time !== nothing
+                    all_time += time
+                else
+                    error_flag = true
+                end
             end
-            avg_time = all_time/length(sources)
+            if time !== nothing
+                avg_time = all_time/length(sources)
+            end
 
         elseif algorithm_name == "dial"
             all_time = 0
             for src in sources
                 start_node = graph.all_vertices[src]        # src to Integer a potrzebuję obiektu Node
                 time = dial_for_sources(graph, start_node, max_edge_cost)
-                all_time += time
+    
+                if time !== nothing
+                    all_time += time
+                else
+                    error_flag = true
+                end
             end
-            avg_time = all_time/length(sources)
+            if time !== nothing
+                avg_time = all_time/length(sources)
+            end
 
         elseif algorithm_name == "radixheap"
             all_time = 0
             for src in sources
                 start_node = graph.all_vertices[src]        # src to Integer a potrzebuję obiektu Node
                 time = radix_heap_solver(graph, start_node)
-                all_time += time
+                
+                if time !== nothing
+                    all_time += time
+                else
+                    error_flag = true
+                end
             end
-            avg_time = all_time/length(sources)
+            if time !== nothing
+                avg_time = all_time/length(sources)
+            end
         else
             println("[ERROR] Wrong algorithm. Should be: dijkstra, dial or radixheap.")
             exit(1)
@@ -125,7 +157,7 @@ function main()
         result_filename = ARGS[7]
 
         if endswith(result_filename, ".ss.res") && flag3 == "-oss"
-            create_result_file_sources(file_with_data, file_src_or_pair, algorithm_name, min_edge_cost, max_edge_cost, avg_time, number_of_vertices, number_of_edges, result_filename)
+            create_result_file_sources(file_with_data, file_src_or_pair, algorithm_name, min_edge_cost, max_edge_cost, avg_time, number_of_vertices, number_of_edges, result_filename, error_flag)
         else
             println("[ERROR] Wrong format of file with results or wrong flag. Should be: -oss <filename>.ss.res")
             exit(1)
@@ -146,7 +178,11 @@ function main()
                 start_node = graph.all_vertices[start]        # start to Integer a potrzebuję obiektu Node
                 finish_node = graph.all_vertices[finish]
                 shortes_path_cost = dijkstra_for_pairs(graph, start_node, finish_node)
-                push!(costs, ((start, finish), shortes_path_cost))
+                if shortes_path_cost !== nothing
+                    push!(costs, ((start, finish), shortes_path_cost))
+                else
+                    error_flag = true
+                end
             end
 
         elseif algorithm_name == "dial"
@@ -155,7 +191,11 @@ function main()
                 start_node = graph.all_vertices[start]        # start to Integer a potrzebuję obiektu Node
                 finish_node = graph.all_vertices[finish]
                 shortes_path_cost = dial_for_pairs(graph, start_node, finish_node, max_edge_cost)
-                push!(costs, ((start, finish), shortes_path_cost))
+                if shortes_path_cost !== nothing
+                    push!(costs, ((start, finish), shortes_path_cost))
+                else
+                    error_flag = true
+                end
             end
 
         elseif algorithm_name == "radixheap"
@@ -164,7 +204,11 @@ function main()
                 start_node = graph.all_vertices[start]        # start to Integer a potrzebuję obiektu Node
                 finish_node = graph.all_vertices[finish]
                 shortes_path_cost = radix_heap_solver(graph, start_node, target=finish_node)
-                push!(costs, ((start, finish), shortes_path_cost))
+                if shortes_path_cost !== nothing
+                    push!(costs, ((start, finish), shortes_path_cost))
+                else
+                    error_flag = true
+                end
             end
 
         else
@@ -175,7 +219,7 @@ function main()
         output_filename = ARGS[7]
 
         if endswith(output_filename, ".p2p.res") && flag3 == "-op2p"
-            create_result_file_pairs(file_with_data, file_src_or_pair, algorithm_name, min_edge_cost, max_edge_cost, number_of_vertices, number_of_edges, costs, output_filename)
+            create_result_file_pairs(file_with_data, file_src_or_pair, algorithm_name, min_edge_cost, max_edge_cost, number_of_vertices, number_of_edges, costs, output_filename, error_flag)
         else
             println("[ERROR] Wrong format of file with results or wrong flag. Should be: -op2p <filename>.p2p.res")
             exit(1)
