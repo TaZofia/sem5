@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{float}
+
+\setlength{\parindent}{0pt}
+
+\title{Sprawozdanie laboratorium lista 5 \\Obliczenia naukowe}
+\author{\normalsize Zofia Tarchalska, indeks: 279699}
+\date{}
+
+\begin{document}
+\maketitle
+\section{Wstęp}
+Celem tej listy było zaimplementowanie trzech poniższych algorytmów o złożoności $O(n)$:
+\begin{itemize}
+    \item funkcja rozwiązująca układ $Ax=b$ metodą eliminacji Gaussa
+    \item funkcja wyznaczająca rozkład $LU$ maciezry $A$ metodą eliminacji Gaussa
+    \item funkcja rozwiązująca układ $Ax=b$ jeśli już wcześniej został wyznaczony rozkład $LU$
+\end{itemize}
+Wszystkie te algorytmy mają działać dla macierzy $A$ o specyficznej postaci, która została dokładnie opisana w poleceniu do zadania.
+
+\section{Metoda eliminacji Gaussa}
+\subsection{Wariant pierwszy - bez wyboru elementu głównego}
+Główną ideą metody eliminacji Gaussa jest doprowadzenie macierzy do postaci, w której pod przekątną znajdują się same zera. Uzyskujemy to poprzez mnożenie kolejnych wierszy macierzy przez odpowiednie czynniki i odejmowanie ich od wierszy następujących po nich. Poprawny schemat:
+\newline
+
+Eliminujemy zmienną $x_k$ z wierszy od $k + 1$ do $n$. Mnożymy $k-te$ równanie przez 
+\[
+    l_{ik} = \frac{a_{ik}}{a_{kk}} \quad \text{dla } i \in \{k + 1, ..., n\}
+\]
+
+Kiedy jednak na przekątnej w miejscu $a_{kk}$ będzie $0$ metoda może powodować błąd numeryczny, ponieważ nastąpi dzielenie przez $0$. W przeciwnym wypadku, po wykonaniu odpowiednich kroków kolejno dla wszystkich wierszy macierzy, otrzymujemy macierz górnotrójkątną. 
+
+
+
+
+TO DO opis algorytmu 
+
+
+\subsection{Wariant drugi - z częściowym wyborem \\elementu głównego}
+Ten wariant ma zabezpieczać nas przed potencjalnym dzieleniem przez $0$ gdy na przekątnej macierzy taka warotść się znajduje. Biorąc pod uwagę, że obliczenia wykonujemy na komputerze, liczby bardzo zbliżone do $0$ również są tymi, które mogą nam zwrócić błąd.
+
+Element główny to nic innego jak wybrana wartość, którą będziemy używać aby wyzerować pozostałe w kolumnie. 
+
+
+
+
+\end{document}
