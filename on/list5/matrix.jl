@@ -81,7 +81,7 @@ Funkcja tworząca macierz postaci zadanej na liście wypełnioną podanymi warto
 size - szerokość/wysokość macierzy
 block_size - szerokość/wysokość bloku (musi być dzielnikiem size)
 Vs - wektor trójek (i, j, v), gdzie i, j to indeksy a v to wartość
-"""
+
 function get_blockmatrix(size::Int, block_size::Int, Vs::Vector{Tuple{Int, Int, Float64}})
     M = get_blockmatrix(size, block_size)
     for (i, j, v) in Vs
@@ -91,18 +91,18 @@ function get_blockmatrix(size::Int, block_size::Int, Vs::Vector{Tuple{Int, Int, 
 end
 
 
-"""
+
 Funkcja tworząca pustą macierz postaci zadanej na liście.
 size - szerokość/wysokość macierzy
 block_size - szerokość/wysokość bloku (musi być dzielnikiem size)
-"""
+
 function get_blockmatrix(size::Int, block_size::Int)
     block_no = Int(size / block_size)
     A = spzeros(size, size)
     return BlockMatrix(A, size, block_size, block_no, 0)
 end
 
-
+"""
 
 """
 Funkcja zwracająca dla danej kolumny macierzy indeks pierwszego od od góry wiersza z niezerową wartością.

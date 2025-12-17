@@ -1,3 +1,4 @@
+# Zofia Tarchalska
 include("matrix.jl")
 
 module blocksys
@@ -9,13 +10,13 @@ składa się z samych jedynek.
 A - macierz taka jak na liście
 """
 function generate_right_hand_side(A::BlockMatrix)
-    R = zeros(Float64, A.size)
+    Rhs = zeros(Float64, A.size)
     for i in 1:A.size
         for j in get_nonzero_columns(A, i)
-            R[i] += A[i, j]
+            Rhs[i] += A[i, j]
         end
     end
-    return R
+    return Rhs
 end
 
 
