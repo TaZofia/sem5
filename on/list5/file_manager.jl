@@ -1,6 +1,9 @@
 # Zofia Tarchalska 
+include("blocksys.jl")
 
 module FileManager
+using SparseArrays
+using Main.Matrix
 
 export read_A, read_b, write_x
 

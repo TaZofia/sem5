@@ -2,7 +2,9 @@
 include("matrix.jl")
 
 module blocksys
-using Main.BlockMatrix
+
+export generate_right_hand_side, gauss_elimination, gauss_elimination_with_main_element, generate_lu!, generate_lu_with_main_element!, solve_by_lu!, solve_by_lu_with_main_element!, solve_with_lu!, solve_with_lu_with_main_element!
+using Main.Matrix
 
 """
 Funkcja wyznaczająca wektor prawych stron dla podanej macierzy A przy założeniu, że wektor rozwiązań x

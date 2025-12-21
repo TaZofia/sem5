@@ -4,6 +4,8 @@ export BlockMatrix, get_blockmatrix, get_bottom_row, get_top_row, get_first_colu
 
 using SparseArrays
 
+
+
 """
 Struktura odzwierciedlająca macierz zadaną na liście
 """
