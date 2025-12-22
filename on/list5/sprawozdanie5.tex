@@ -7,6 +7,9 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
 
 \setlength{\parindent}{0pt}
 
@@ -17,18 +20,17 @@
 \begin{document}
 \maketitle
 \section{Wstęp}
-Celem tej listy było zaimplementowanie trzech poniższych algorytmów o złożoności $O(n)$:
+Celem tej listy było zaimplementowanie trzech poniższych algorytmów o złożoności $O(n)$, gdzie $n$ to rozmiar macierzy $n \times n$.
 \begin{itemize}
     \item funkcja rozwiązująca układ $Ax=b$ metodą eliminacji Gaussa
     \item funkcja wyznaczająca rozkład $LU$ maciezry $A$ metodą eliminacji Gaussa
     \item funkcja rozwiązująca układ $Ax=b$ jeśli już wcześniej został wyznaczony rozkład $LU$
 \end{itemize}
-Wszystkie te algorytmy mają działać dla macierzy $A$ o specyficznej postaci, która została dokładnie opisana w poleceniu do zadania.
+Wszystkie te algorytmy mają działać dla macierzy $A$ o specyficznej postaci, która została dokładnie opisana w poleceniu do zadania. Dodatkowo należało zaprogramować wersję podstawową oraz wersję z wybieraniem elementu głównego.
 
 \section{Metoda eliminacji Gaussa}
-\subsection{Wariant pierwszy - bez wyboru elementu głównego}
 Główną ideą metody eliminacji Gaussa jest doprowadzenie macierzy do postaci, w której pod przekątną znajdują się same zera. Uzyskujemy to poprzez mnożenie kolejnych wierszy macierzy przez odpowiednie czynniki i odejmowanie ich od wierszy następujących po nich. Poprawny schemat:
-\newline
+
 
 Eliminujemy zmienną $x_k$ z wierszy od $k + 1$ do $n$. Mnożymy $k-te$ równanie przez 
 \[
@@ -37,10 +39,50 @@ Eliminujemy zmienną $x_k$ z wierszy od $k + 1$ do $n$. Mnożymy $k-te$ równani
 
 Kiedy jednak na przekątnej w miejscu $a_{kk}$ będzie $0$ metoda może powodować błąd numeryczny, ponieważ nastąpi dzielenie przez $0$. W przeciwnym wypadku, po wykonaniu odpowiednich kroków kolejno dla wszystkich wierszy macierzy, otrzymujemy macierz górnotrójkątną. 
 
+\subsection{Wariant pierwszy - bez wyboru elementu głównego}
+Ten wariant nie zabezpiecza nas przed opisanym powyżej błędem numerycznym.
+
+\subsection{Złożoność obliczeniowa}
+W niezoptymalizowanej wersji algorytmu złożoność wynosiłaby $O(n^3)$, ponieważ mamy 3 pętle \texttt{for} przechodzące po elementach macierzy. Dla każdego wiersza w macierzy wyznaczamy czynnik przez który przemnażamy ten wiersz po czym odejmujemy go od kolejnych wierszy (musimy przejść po wszytskich elementach w danym wierszu, a macierz ma wymiary $n \times n$). Jednak wykorzystując blokową strukturę macierzy A da się sprowadzić ten algorytm do złożoności $O(n)$. Wiemy, że rozmiar pojedynczego bloku ma jakiś określony rozmiar. Oznaczmy go przez l. Zatem pod przekątną macierzy jest maksymalnie l elementów, które są niezerowe. Dodatkowo każdy wiersz, o indeksie większym niż 1 ma od lewej same zera, następnie l leżących po sobie nierzerowych wartości i znów zera (chyba, że np. $k+l$ daje już indeks ostatniej kolumny, wtedy nie ma zar od końca). Możemy zatem wykonywać ten algorytm tylko dla wierszy i elementów, dla których ma to sens (oszczędzimy sobie przetwarzania ogromnej liczby samych zer). Możemy zatem odejmować tylko l wierszy i aktualizować w nich l wartości. Ponieważ l jest znacząco mniejsze niż n, złożoność spada do $O(n)$.
+
+\subsection{Pseudokod}
+
+Zawarte w pseudokodzie metody \texttt{get\_bottom\_row}
+oraz \texttt{get\_last\_column}
+ zwracają odpowiednio ostatni wiersz i ostatnią kolumnę, w której pojawia się niezerowy element. Dzięki temu dokonujemy optymalizowania opisanego we wcześniejszym paragrafie i ograniczamy nasze obliczenia jedynie do niezerowych elementów. 
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\Procedure{GaussElimination}{$A,\; b$}
+  \State $n \gets \text{size}(A)$
+  \For{$k \gets 1$ to $n-1$}
+    \For{$i \gets k+1$ to \textproc{get\_bottom\_row}(A,k)}
+      \If{$A[k,k] = 0$} \State \textbf{error} ``Zero on diagonal at $(k,k)$'' \EndIf
+      \State $m \gets A[i,k] / A[k,k]$
+      \State $A[i,k] \gets 0$
+      \For{$j \gets k+1$ to \textproc{get\_last\_column}(A,k)}
+        \State $A[i,j] \gets A[i,j] - m \cdot A[k,j]$
+      \EndFor
+      \State $b[i] \gets b[i] - m \cdot b[k]$
+    \EndFor
+  \EndFor
+
+  \State $x \gets \mathbf{0}\in\mathbb{R}^n$
+  \State $x[n] \gets b[n] / A[n,n]$
+  \For{$i \gets n-1$ \textbf{downto} $1$}
+    \State $s \gets 0$
+    \For{$j \gets i+1$ to \textproc{get\_last\_column}(A,i)}
+      \State $s \gets s + A[i,j]\cdot x[j]$
+    \EndFor
+    \State $x[i] \gets (b[i] - s) / A[i,i]$
+  \EndFor
+  \State \Return $x$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 
 
-TO DO opis algorytmu 
 
 
 \subsection{Wariant drugi - z częściowym wyborem \\elementu głównego}
