@@ -14,12 +14,10 @@ mutable struct BlockMatrix
     size::Int               # rozmiar macierzy A
     block_size::Int         # rozmiar macierzy Ak, Bk, Ck
     blocks_no::Int
-    operation_count::Int
 end
 
 
 function Base.getindex(M::BlockMatrix, i::Int, j::Int)
-    M.operation_count += 1
     return M.matrix[i, j]
 end
 

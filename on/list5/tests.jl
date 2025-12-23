@@ -29,7 +29,3 @@ end
 @testset "Rozwiązanie LU z częściowym wyborem elementu głównego" begin
     @test isapprox(solve_by_lu_with_main_element!(deepcopy(A), deepcopy(b)), x)
 end
-
-
-
-# TO DO sprawdzanie czy samo LU zostało dobrze wyznaczone?

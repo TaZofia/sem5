@@ -42,10 +42,13 @@ Kiedy jednak na przekątnej w miejscu $a_{kk}$ będzie $0$ metoda może powodowa
 \subsection{Wariant pierwszy - bez wyboru elementu głównego}
 Ten wariant nie zabezpiecza nas przed opisanym powyżej błędem numerycznym.
 
-\subsection{Złożoność obliczeniowa}
-W niezoptymalizowanej wersji algorytmu złożoność wynosiłaby $O(n^3)$, ponieważ mamy 3 pętle \texttt{for} przechodzące po elementach macierzy. Dla każdego wiersza w macierzy wyznaczamy czynnik przez który przemnażamy ten wiersz po czym odejmujemy go od kolejnych wierszy (musimy przejść po wszytskich elementach w danym wierszu, a macierz ma wymiary $n \times n$). Jednak wykorzystując blokową strukturę macierzy A da się sprowadzić ten algorytm do złożoności $O(n)$. Wiemy, że rozmiar pojedynczego bloku ma jakiś określony rozmiar. Oznaczmy go przez l. Zatem pod przekątną macierzy jest maksymalnie l elementów, które są niezerowe. Dodatkowo każdy wiersz, o indeksie większym niż 1 ma od lewej same zera, następnie l leżących po sobie nierzerowych wartości i znów zera (chyba, że np. $k+l$ daje już indeks ostatniej kolumny, wtedy nie ma zar od końca). Możemy zatem wykonywać ten algorytm tylko dla wierszy i elementów, dla których ma to sens (oszczędzimy sobie przetwarzania ogromnej liczby samych zer). Możemy zatem odejmować tylko l wierszy i aktualizować w nich l wartości. Ponieważ l jest znacząco mniejsze niż n, złożoność spada do $O(n)$.
+\subsubsection{Złożoność czasowa}
+W niezoptymalizowanej wersji algorytmu złożoność wynosiłaby $O(n^3)$, ponieważ mamy 3 pętle \texttt{for} przechodzące po elementach macierzy. Dla każdego wiersza w macierzy wyznaczamy czynnik przez który przemnażamy ten wiersz po czym odejmujemy go od kolejnych wierszy (musimy przejść po wszytskich elementach w danym wierszu, a macierz ma wymiary $n \times n$). Jednak wykorzystując blokową strukturę macierzy A da się sprowadzić ten algorytm do złożoności $O(n)$. Wiemy, że rozmiar pojedynczego bloku ma jakiś określony rozmiar. Oznaczmy go przez l. Zatem pod przekątną macierzy jest maksymalnie l elementów, które są niezerowe. Dodatkowo każdy wiersz, o indeksie większym niż 1 ma od lewej same zera, następnie l leżących po sobie niezerowych wartości i znów zera (chyba, że np. $k+l$ daje już indeks ostatniej kolumny, wtedy nie ma zar od końca). Możemy zatem wykonywać ten algorytm tylko dla wierszy i elementów, dla których ma to sens (oszczędzimy sobie przetwarzania ogromnej liczby samych zer). Możemy zatem odejmować tylko l wierszy i aktualizować w nich l wartości. Ponieważ l jest znacząco mniejsze niż n, złożoność spada do $O(n)$.
 
-\subsection{Pseudokod}
+\subsubsection{Złożoność pamięciowa}
+Zaimplementowana przeze mnie struktura \texttt{BlockMatrix} przechowuje naszą macierz blokową A. Korzysta przy tym ze \texttt{SparseArrays} dostępnych w języku Julia. \texttt{SparseArrays} nie przechowują niezerowych elementów, wobec tego, ze względu na budowę A, mamy tylko elementy zlokalizowane w otoczeniu przekątnej. Ponieważ jest to co najwyżej l elementów przypadających na każdy wiersz/kolumnę, których jest n, to ze względu, że l jest jakąś stałą, złożoność pamięciowa to $O(n)$.
+
+\subsubsection{Pseudokod}
 
 Zawarte w pseudokodzie metody \texttt{get\_bottom\_row}
 oraz \texttt{get\_last\_column}
@@ -81,14 +84,59 @@ oraz \texttt{get\_last\_column}
 \end{algorithmic}
 \end{algorithm}
 
-
-
-
-
 \subsection{Wariant drugi - z częściowym wyborem \\elementu głównego}
 Ten wariant ma zabezpieczać nas przed potencjalnym dzieleniem przez $0$ gdy na przekątnej macierzy taka warotść się znajduje. Biorąc pod uwagę, że obliczenia wykonujemy na komputerze, liczby bardzo zbliżone do $0$ również są tymi, które mogą nam zwrócić błąd.
 
-Element główny to nic innego jak wybrana wartość, którą będziemy używać aby wyzerować pozostałe w kolumnie. 
+Element główny to nic innego jak wybrana wartość, którą będziemy używać aby wyzerować pozostałe w kolumnie. Wybieramy ją poprzez znaleznienie największej wartości w kolumnie (patrząc na jej moduł). Następnie wyznaczamy czynnik, przez który będziemy mnożyć kolejne wiersze, korzystając już z tej największej wartości. Zapamiętujemy, które wiersze zostały zamienione za pomocą tablicy permutacji. Dzięki temu nie modyfikujemy macierzy A, a odwołując się do konkretnego wiersza zamiast używać jego indeksu wprost, używamy \texttt{p[indeks]}. 
+
+\subsubsection{Złożoność czasowa}
+Algorytm z wyborem elementu głównego jest bardzo podobny do zwykłej eliminacji Gaussa. Jedyna różnica polega na tym, że w pierwszej pętli \texttt{for} gdy przechodzimy po kolumnach wybieramy największą wartość w danej kolumnie. Następnie wykonujemy, tak samo, resztę algorytmu na zmienionej kolejności wierszy. Ta jedna dodatkowa pętla nawet w niezoptymalizowanej wersji nie zwiększyłaby złożoności algorytmu. Wobec tego pozostaje, identycznie jak poprzednio, złożność czasowa równa $O(n)$.
+\subsubsection{Złożoność pamięciowa}
+W tym algorytmie mamy dodatkową tablicę permutacji. Jest ona rozmiaru $n$, który odpowiada liczbie wierszy w macierzy. Poza nią wszystko jest przechowywane tak samo jak poprzednio. Czyli, wszystkie modyfikacje wykonywane są in-place na macierzy A. Jak już wspomniałam wcześniej tablica permutacji ma n elementów, a więc nie zmienia to rzędu pamięci. Wobec tego złożoność pamięciowa to dalej $O(n)$.
+
+\subsubsection{Pseudokod}
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+\Require $A$ -- \texttt{BlockMatrix} $n\times n$; $b$ -- wektor prawych stron dł. $n$
+\Ensure $x$ -- rozwiązanie układu $Ax=b$
+\State $n \gets A.size$
+\State $p \gets [1,2,\dots,n]$ \Comment{wektor permutacji (mapowanie wierszy)}
+\For{$k \gets 1$ \textbf{to} $n-1$}
+    \State $bound \gets \text{get\_bottom\_row}(A,k)$
+    \State $j \gets k$ \Comment{indeks wiersza z największym elementem w kolumnie}
+    \For{$r \gets k$ \textbf{to} $bound$}
+        \If{$|A[p[r],k]| > |A[p[j],k]|$}
+            \State $j \gets r$
+        \EndIf
+    \EndFor
+    \State swap($p[k], p[j]$) \Comment{zamiana w wektorze permutacji}
+    \For{$i \gets k+1$ \textbf{to} $bound$}
+        \State $z \gets A[p[i],k] / A[p[k],k]$
+        \State $A[p[i],k] \gets 0$
+        \State $last \gets \text{get\_last\_column}(A,\,k + A.block\_size)$
+        \For{$j \gets k+1$ \textbf{to} $last$}
+            \State $A[p[i],j] \gets A[p[i],j] - z \cdot A[p[k],j]$
+        \EndFor
+        \State $b[p[i]] \gets b[p[i]] - z \cdot b[p[k]]$
+    \EndFor
+\EndFor
+
+\State $x \gets \mathbf{0}\in\mathbb{R}^n$
+\State $x[n] \gets b[p[n]] / A[p[n],n]$
+\For{$i \gets n-1$ \textbf{downto} $1$}
+    \State $s \gets b[p[i]]$
+    \State $last \gets \text{get\_last\_column}(A,\,i + A.block\_size)$
+    \For{$j \gets i+1$ \textbf{to} $last$}
+        \State $s \gets s - A[p[i],j] \cdot x[j]$
+    \EndFor
+    \State $x[i] \gets s / A[p[i],i]$
+\EndFor
+
+\State \Return $x$
+\end{algorithmic}
+\end{algorithm}
+
+
 
 
 
