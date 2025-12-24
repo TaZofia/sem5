@@ -60,7 +60,7 @@ oraz \texttt{get\_last\_column}
   \State $n \gets \text{size}(A)$
   \For{$k \gets 1$ to $n-1$}
     \For{$i \gets k+1$ to \textproc{get\_bottom\_row}(A,k)}
-      \If{$A[k,k] = 0$} \State \textbf{error} ``Zero on diagonal at $(k,k)$'' \EndIf
+      \State \text{Jeżeli A[k, k] jest zerem - błąd}
       \State $m \gets A[i,k] / A[k,k]$
       \State $A[i,k] \gets 0$
       \For{$j \gets k+1$ to \textproc{get\_last\_column}(A,k)}
@@ -104,11 +104,7 @@ W tym algorytmie mamy dodatkową tablicę permutacji. Jest ona rozmiaru $n$, kt�
 \For{$k \gets 1$ \textbf{to} $n-1$}
     \State $bound \gets \text{get\_bottom\_row}(A,k)$
     \State $j \gets k$ \Comment{indeks wiersza z największym elementem w kolumnie}
-    \For{$r \gets k$ \textbf{to} $bound$}
-        \If{$|A[p[r],k]| > |A[p[j],k]|$}
-            \State $j \gets r$
-        \EndIf
-    \EndFor
+    \State \text{Znajdź największy element w kolumnie i przypisz do j}
     \State swap($p[k], p[j]$) \Comment{zamiana w wektorze permutacji}
     \For{$i \gets k+1$ \textbf{to} $bound$}
         \State $z \gets A[p[i],k] / A[p[k],k]$
@@ -137,8 +133,99 @@ W tym algorytmie mamy dodatkową tablicę permutacji. Jest ona rozmiaru $n$, kt�
 \end{algorithm}
 
 
+\section{Rozkład LU}
+Rozkład LU to taki podział, w którym A = LU. Czyli zamieniamy macierz A na dwie macierze trójkątne. L jest macierzą dolnotrójkątną, a U górnotrójkątną. L zawiera mnożniki $l_{ik}$ w miejscu zerowanych elementów. 
 
 
+\[
+L =
+\begin{pmatrix}
+1        & \cdots  &        &        & 1      \\
+m_{21}   & 1       & \cdots &        &        \\
+m_{31}   & m_{32}  & 1      & \cdots &        \\
+\vdots   & \vdots  & \ddots & \ddots & \vdots \\
+m_{n1}   & m_{n2}  & \cdots & m_{n,n-1} & 1
+\end{pmatrix}
+\]
 
+\[
+U =
+\begin{pmatrix}
+u_{11} & u_{12} & \cdots & u_{1n} \\
+0      & u_{22} & \cdots & u_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+0      & 0      & \cdots & u_{nn}
+\end{pmatrix}
+\]\\
+
+Znając LU sprowadzamy nasz problem do rozwiązania
+\[
+Ly = b
+\]
+\[
+Ux = y
+\]
+
+Podczas obliczeń, aby odszczędzać miejsce, będziemy modyfikować macierz A, tak aby pod przekątną znalazło się L a pozostałe miejsca były zajęte przez U.
+
+\subsection{Wariant pierwszy - bez wyboru elementu głównego}
+
+\subsubsection{Złożoność czasowa}
+Po przyjrzeniu się algorytmowi na wyznaczenie LU zauważymy, że jest on bardzo podobny do procesu eliminacji w eliminacji Gaussa. Występują dokładnie te same obliczenia z tą różnicą, że macierz A jest modyfikowana i zapisywane są wewnątrz niej wartości L oraz U. Z tego powodu możemy stwierdzić, że złożoność czasowa tego algorytmu to również $O(n)$.
+
+\subsubsection{Złożoność pamięciowa}
+Jeśli chodzi o złożoność pamięciową to LU zapisujemy w A. Obydwie macierze mają tą samą strukturę. Więc złożoność pamięciowa wynosi $O(n)$.
+
+
+\subsubsection{Pseudokody}
+\begin{algorithm}[H]
+\caption{Generowanie rozkładu LU (in‑place)}
+\begin{algorithmic}[1]
+\Require $A$ -- macierz $n\times n$ typu BlockMatrix
+\Ensure macierz $A$ zmodyfikowana tak, że dolna część zawiera współczynniki $L$, a górna część zawiera $U$
+\State $n \gets A.size$
+\For{$k \gets 1$ \textbf{to} $n-1$}
+  \For{$i \gets k+1$ \textbf{to} $\text{get\_bottom\_row}(A,k)$}
+    \State \text{Jeżeli A[k, k] jest zerem - błąd}
+    \State $l \gets A[i,k] / A[k,k]$ \Comment{współczynnik L}
+    \State $A[i,k] \gets l$ \Comment{zapisujemy $l$ w dolnej części}
+    \For{$j \gets k+1$ \textbf{to} $\text{get\_last\_column}(A,k)$}
+      \State $A[i,j] \gets A[i,j] - l \cdot A[k,j]$ \Comment{aktualizacja elementów U}
+    \EndFor
+  \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Rozwiązywanie układu przy użyciu rozkładu LU (in‑place)}
+\begin{algorithmic}[1]
+\Require $LU$ -- macierz zawierająca $L$ (pod przekątną) i $U$ (nad przekątną)
+\Require $b$ -- wektor prawych stron długości $n$ (nadpisywany)
+\Ensure $x$ -- rozwiązanie układu $Ax=b$
+\State $n \gets LU.size$
+\Comment{1. Rozwiązanie $L y = b$ (podstawianie w przód), wynik zapisany w $b$}
+\For{$k \gets 1$ \textbf{to} $n-1$}
+  \For{$i \gets k+1$ \textbf{to} $\text{get\_bottom\_row}(LU,k)$}
+    \State $b[i] \gets b[i] - LU[i,k]\cdot b[k]$
+  \EndFor
+\EndFor
+
+\Comment{2. Rozwiązanie $U x = y$ (podstawianie wsteczne)}
+\State $x \gets \mathbf{0}\in\mathbb{R}^n$
+\For{$i \gets n$ \textbf{downto} $1$}
+  \State $s \gets b[i]$
+  \For{$j \gets i+1$ \textbf{to} $\text{get\_last\_column}(LU,i)$}
+    \State $s \gets s - LU[i,j]\cdot x[j]$
+  \EndFor
+  \State $x[i] \gets s / LU[i,i]$
+\EndFor
+
+\State \Return $x$
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Wariant drugi - z częciowym wyborem \\elementu głównego}
 
 \end{document}

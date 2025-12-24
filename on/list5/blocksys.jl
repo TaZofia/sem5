@@ -85,6 +85,11 @@ function gauss_elimination_with_main_element(A::BlockMatrix, b::Vector{Float64})
         end
 
         p[k], p[j] = p[j], p[k]
+
+        if A[p[k], k] == 0
+            throw(error("Zero value on the diagonal of A at index ($(p[k]), $k)"))            
+        end
+
         # eliminacja 
         for i in k+1 : bound
             z = A[p[i], k] / A[p[k], k]
