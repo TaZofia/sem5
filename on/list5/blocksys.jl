@@ -12,9 +12,14 @@ składa się z samych jedynek.
 A - macierz taka jak na liście
 """
 function generate_right_hand_side(A::BlockMatrix)
-    Rhs = zeros(Float64, A.size)
-    for i in 1:A.size
-        for j in get_nonzero_columns(A, i)
+    n = A.size[1]
+    Rhs = zeros(Float64, n)
+    for i in 1:n
+
+        start = convert(Int, max(i - (2 + A.block_size), 1))
+        finish = convert(Int, min(i + A.block_size, n))
+
+        for j in start:finish
             Rhs[i] += A[i, j]
         end
     end
@@ -29,24 +34,28 @@ b - wektor prawych stron długości n
 
 """
 function gauss_elimination(A::BlockMatrix, b::Vector{Float64})
-    n = A.size
-
+    println("in")
+    n = A.size[1]
     for k in 1 : n-1
-        for i in k+1 : get_bottom_row(A, k)
-            try
-                m = A[i, k] / A[k, k]
-                A[i, k] = 0.0
-
-                for j in k+1 : get_last_column(A, k)
-                    A[i, j] -= m * A[k, j]
-                end
-
-                b[i] -= m * b[k]
-
-            catch err
+        if k%1000 == 0
+            println("wiersz: ", k)
+        end
+        for i in k+1 : min(n, k + A.block_size + 1)
+          
+            if A[k, k] == 0
                 error("Zero value on the diagonal of A at index ($k, $k)")
+                return
+            end
 
-            end            
+            m = A[i, k] / A[k, k]
+            A[i, k] = 0.0
+
+            for j in k+1 : min(n, k + A.block_size + 1)
+                A[i, j] -= m * A[k, j]
+            end
+
+            b[i] -= m * b[k]
+            
         end
     end
 
@@ -55,7 +64,7 @@ function gauss_elimination(A::BlockMatrix, b::Vector{Float64})
     x[n] = b[n] / A[n, n]
     for i in n-1 : -1 : 1
         x[i] = b[i]
-        for j in i+1 : get_last_column(A, i)
+        for j in i+1 : min(n, i + 2 + A.block_size )
             x[i] -= A[i, j] * x[j]
         end
         x[i] /= A[i, i]
@@ -70,44 +79,43 @@ Funkcja, która rozwiązuje układ równań metodą eliminacji Gaussa z części
 A - macierz taka jak na liście o wymiarach nxn
 b - wektor prawych stron długości n
 """
-function gauss_elimination_with_main_element(A::BlockMatrix, b::Vector{Float64})
-    n = A.size
-    p = [1:n;]      # wektor permutacji, początkowo nic nie jest zmienione, więc numer wiersza odpowiada indeksowi
-    
-    for k in 1 : n-1
-        bound = get_bottom_row(A, k)
 
-        j = k;      # j będzie wskazywać indeks największego elementu w kolumnie
+function gauss_elimination_with_main_element(A::BlockMatrix, b::Vector{Float64})
+    n = A.size[1]
+    p = collect(1:n)      # wektor permutacji, początkowo nic nie jest zmienione, więc numer wiersza odpowiada indeksowi
+   
+    for k in 1 : n-1
+        bound = min(n, k + A.block_size + 1)
+
+        pivot = k;      # pivot będzie wskazywać indeks największego elementu w kolumnie
         for r in k:bound
-            if abs(A[p[r], k]) > abs(A[p[j], k])
-                j = r
+            if abs(A[p[r], k]) > abs(A[p[pivot], k])
+                pivot = r
             end
         end
 
-        p[k], p[j] = p[j], p[k]
+        p[k], p[pivot] = p[pivot], p[k]
 
-        if A[p[k], k] == 0
-            throw(error("Zero value on the diagonal of A at index ($(p[k]), $k)"))            
-        end
+  
 
         # eliminacja 
         for i in k+1 : bound
             z = A[p[i], k] / A[p[k], k]
             A[p[i], k] = 0.0
 
-            for j in k+1 : get_last_column(A, k + A.block_size)
+            for j in k+1 : min(n, k + 2 * A.block_size)
                 A[p[i], j] -= z * A[p[k], j]
             end
             b[p[i]] -= z * b[p[k]]
         end
     end
 
-    # wyznaczanie wektora x
     x = zeros(n)
+
     x[n] = b[p[n]] / A[p[n], n]
     for i in n-1 : -1 : 1
         x[i] = b[p[i]]
-        for j in i+1 : get_last_column(A, i + A.block_size)
+        for j in i+1 : min(n, i + 2 * A.block_size)
             x[i] -= A[p[i], j] * x[j]
         end
         x[i] /= A[p[i], i]
@@ -123,19 +131,19 @@ function generate_lu!(A::BlockMatrix)
     n = A.size
 
     for k in 1 : n-1
-        for i in k+1 : get_bottom_row(A, k)
-            try
-                l = A[i, k] / A[k, k]
-                A[i, k] = l                 # dolnotórjkątne zapisywanie współczynników l
-
-                for j in k+1 : get_last_column(A, k)
-                    A[i, j] -= l * A[k, j]  # aktualizowanie górnotrójkątnej części macierzy
-                end 
-
-            catch err
+        for i in k+1 : min(n, k + A.block_size + 1)
+          
+            if A[k, k] == 0
                 error("Zero value on the diagonal of A at index ($k, $k)")
+                return
+            end
+            l = A[i, k] / A[k, k]
+            A[i, k] = l                 # dolnotórjkątne zapisywanie współczynników l
 
-            end            
+            for j in k+1 : min(n, k + A.block_size + 1)
+                A[i, j] -= l * A[k, j]  # aktualizowanie górnotrójkątnej części macierzy
+            end 
+        
         end
     end
 end
@@ -152,7 +160,7 @@ function solve_with_lu!(LU::BlockMatrix, b::Vector{Float64})
     # Ly = b
     # nadpisujemy wektor b i zapisujemy w nim rozwiązanie czyli wektor y 
     for k in 1 : n - 1
-        for i in k + 1 : get_bottom_row(LU, k)
+        for i in k + 1 : min(n, k + LU.block_size + 1)
             b[i] -= LU[i, k] * b[k]         # L[i, k] - kolejne elementy od przekątnej w dół kolumny
         end
     end
@@ -163,7 +171,7 @@ function solve_with_lu!(LU::BlockMatrix, b::Vector{Float64})
     x = zeros(Float64, n)
     for i in n : -1 : 1
         x[i] = b[i]
-        for j in i+1 : get_last_column(LU, i)
+        for j in i+1 : min(n, i + LU.block_size)
             x[i] -= LU[i, j] * x[j]
         end
         x[i] /= LU[i, i]
@@ -194,7 +202,7 @@ function generate_lu_with_main_element!(A::BlockMatrix)
     n = A.size
     p = [1:n;]
     for k in 1 : n-1
-        bound = get_bottom_row(A, k)
+        bound = min(n, k + A.block_size + 1)
         
         j = k;     
         for r in k:bound
@@ -207,7 +215,7 @@ function generate_lu_with_main_element!(A::BlockMatrix)
         for i in k+1 : bound
             z = A[p[i], k] / A[p[k], k]
             A[p[i], k] = z
-            for j in k+1 : get_last_column(A, k + A.block_size)
+            for j in k+1 : min(n, k + 2 * A.block_size)
                 A[p[i], j] -= z * A[p[k], j]
             end
         end
@@ -227,10 +235,10 @@ b - wektor prawych stron długości n  (ulega zmianom)
 function solve_with_lu_with_main_element!(LU::BlockMatrix, p::Vector{Int}, b::Vector{Float64})
     n = LU.size
 
-    # Ly = pb
-    for i in 2 : n
-        for j in get_first_column(LU, p[i]) : i-1
-            b[p[i]] -= LU[p[i], j] * b[p[j]]
+    # Ly = b
+    for k in 1:n-1
+        for i in k+1:min(n, 2 * LU.block_size + k)
+            b[p[i]] -= LU[p[i], k] * b[p[k]]
         end
     end    
 
@@ -239,7 +247,7 @@ function solve_with_lu_with_main_element!(LU::BlockMatrix, p::Vector{Int}, b::Ve
     x[n] = b[p[n]] / LU[p[n], n]
     for i in n-1 : -1 : 1
         x[i] = b[p[i]]
-        for j in i+1 : get_last_column(LU, i + LU.block_size)
+        for j in i+1 : min(n, i + 2 * LU.block_size)
             x[i] -= LU[p[i], j] * x[j]
         end
         x[i] /= LU[p[i], i]
