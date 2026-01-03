@@ -49,21 +49,18 @@ W niezoptymalizowanej wersji algorytmu złożoność wynosiłaby $O(n^3)$, ponie
 Zaimplementowana przeze mnie struktura \texttt{BlockMatrix} przechowuje naszą macierz blokową A. Korzysta przy tym ze \texttt{SparseArrays} dostępnych w języku Julia. \texttt{SparseArrays} nie przechowują niezerowych elementów, wobec tego, ze względu na budowę A, mamy tylko elementy zlokalizowane w otoczeniu przekątnej. Ponieważ jest to co najwyżej l elementów przypadających na każdy wiersz/kolumnę, których jest n, to ze względu, że l jest jakąś stałą, złożoność pamięciowa to $O(n)$.
 
 \subsubsection{Pseudokod}
-
-Zawarte w pseudokodzie metody \texttt{get\_bottom\_row}
-oraz \texttt{get\_last\_column}
- zwracają odpowiednio ostatni wiersz i ostatnią kolumnę, w której pojawia się niezerowy element. Dzięki temu dokonujemy optymalizowania opisanego we wcześniejszym paragrafie i ograniczamy nasze obliczenia jedynie do niezerowych elementów. 
+Każde wykonanaie pętli \texttt{for} jest ograniczone do pewnych indeksów, dla których występują niezerowe elementy. Dzięki temu dokonujemy optymalizowania opisanego we wcześniejszym paragrafie i ograniczamy nasze obliczenia tylko do tyxh elementów, które mają rzeczywisty wpływ na wynik.
 
 \begin{algorithm}[H]
 \begin{algorithmic}[1]
 \Procedure{GaussElimination}{$A,\; b$}
   \State $n \gets \text{size}(A)$
   \For{$k \gets 1$ to $n-1$}
-    \For{$i \gets k+1$ to \textproc{get\_bottom\_row}(A,k)}
+    \For{$i \gets k+1$ to $min(n, k + A.blockSize + 1)$}
       \State \text{Jeżeli A[k, k] jest zerem - błąd}
       \State $m \gets A[i,k] / A[k,k]$
       \State $A[i,k] \gets 0$
-      \For{$j \gets k+1$ to \textproc{get\_last\_column}(A,k)}
+      \For{$j \gets k+1$ to $min(n, k + A.blockSize + 1)$}
         \State $A[i,j] \gets A[i,j] - m \cdot A[k,j]$
       \EndFor
       \State $b[i] \gets b[i] - m \cdot b[k]$
@@ -74,7 +71,7 @@ oraz \texttt{get\_last\_column}
   \State $x[n] \gets b[n] / A[n,n]$
   \For{$i \gets n-1$ \textbf{downto} $1$}
     \State $s \gets 0$
-    \For{$j \gets i+1$ to \textproc{get\_last\_column}(A,i)}
+    \For{$j \gets i+1$ to $min(n, i + 2 \cdot A.blockSize)$}
       \State $s \gets s + A[i,j]\cdot x[j]$
     \EndFor
     \State $x[i] \gets (b[i] - s) / A[i,i]$
@@ -102,15 +99,14 @@ W tym algorytmie mamy dodatkową tablicę permutacji. Jest ona rozmiaru $n$, kt�
 \State $n \gets A.size$
 \State $p \gets [1,2,\dots,n]$ \Comment{wektor permutacji (mapowanie wierszy)}
 \For{$k \gets 1$ \textbf{to} $n-1$}
-    \State $bound \gets \text{get\_bottom\_row}(A,k)$
+    \State $bound \gets min(n, k + A.blockSize + 1)$
     \State $j \gets k$ \Comment{indeks wiersza z największym elementem w kolumnie}
     \State \text{Znajdź największy element w kolumnie i przypisz do j}
     \State swap($p[k], p[j]$) \Comment{zamiana w wektorze permutacji}
     \For{$i \gets k+1$ \textbf{to} $bound$}
         \State $z \gets A[p[i],k] / A[p[k],k]$
         \State $A[p[i],k] \gets 0$
-        \State $last \gets \text{get\_last\_column}(A,\,k + A.block\_size)$
-        \For{$j \gets k+1$ \textbf{to} $last$}
+        \For{$j \gets k+1$ \textbf{to} $min(n, k + 2 \cdot A.blockSize)$}
             \State $A[p[i],j] \gets A[p[i],j] - z \cdot A[p[k],j]$
         \EndFor
         \State $b[p[i]] \gets b[p[i]] - z \cdot b[p[k]]$
@@ -185,11 +181,11 @@ Jeśli chodzi o złożoność pamięciową to LU zapisujemy w A. Obydwie macierz
 \Ensure macierz $A$ zmodyfikowana tak, że dolna część zawiera współczynniki $L$, a górna część zawiera $U$
 \State $n \gets A.size$
 \For{$k \gets 1$ \textbf{to} $n-1$}
-  \For{$i \gets k+1$ \textbf{to} $\text{get\_bottom\_row}(A,k)$}
+  \For{$i \gets k+1$ \textbf{to} $min(n, k + A.blockSize + 1)$}
     \State \text{Jeżeli A[k, k] jest zerem - błąd}
     \State $l \gets A[i,k] / A[k,k]$ \Comment{współczynnik L}
     \State $A[i,k] \gets l$ \Comment{zapisujemy $l$ w dolnej części}
-    \For{$j \gets k+1$ \textbf{to} $\text{get\_last\_column}(A,k)$}
+    \For{$j \gets k+1$ \textbf{to} $min(n, k + A.blockSize + 1)$}
       \State $A[i,j] \gets A[i,j] - l \cdot A[k,j]$ \Comment{aktualizacja elementów U}
     \EndFor
   \EndFor
@@ -206,7 +202,7 @@ Jeśli chodzi o złożoność pamięciową to LU zapisujemy w A. Obydwie macierz
 \State $n \gets LU.size$
 \Comment{1. Rozwiązanie $L y = b$ (podstawianie w przód), wynik zapisany w $b$}
 \For{$k \gets 1$ \textbf{to} $n-1$}
-  \For{$i \gets k+1$ \textbf{to} $\text{get\_bottom\_row}(LU,k)$}
+  \For{$i \gets k+1$ \textbf{to} $min(n , k + LU.blockSize + 1)$}
     \State $b[i] \gets b[i] - LU[i,k]\cdot b[k]$
   \EndFor
 \EndFor
@@ -215,7 +211,7 @@ Jeśli chodzi o złożoność pamięciową to LU zapisujemy w A. Obydwie macierz
 \State $x \gets \mathbf{0}\in\mathbb{R}^n$
 \For{$i \gets n$ \textbf{downto} $1$}
   \State $s \gets b[i]$
-  \For{$j \gets i+1$ \textbf{to} $\text{get\_last\_column}(LU,i)$}
+  \For{$j \gets i+1$ \textbf{to} $min(n , i + LU.blockSize)$}
     \State $s \gets s - LU[i,j]\cdot x[j]$
   \EndFor
   \State $x[i] \gets s / LU[i,i]$
@@ -227,5 +223,18 @@ Jeśli chodzi o złożoność pamięciową to LU zapisujemy w A. Obydwie macierz
 
 
 \subsection{Wariant drugi - z częciowym wyborem \\elementu głównego}
+Analogicznie jak w przypadku eliminacji Gaussa z częściowym wyborem, ten wariant zapobiega błędom numerycznym w przypadku bliskim lub równym zera wartościom na przekątnej macierzy A. Lekko modyfikujemy podstawowy algorytm wyznaczania rozkładu LU, zamieniając wiersze miejscami i zapamiętując tablicę permutacji. W tym samym momencie odpowiednio modyfikujemy macierz A tworząc z niej macierz LU.
+
+\subsubsection{Złożoność czasowa}
+W tym algorytmie występuje taka sama pętla \texttt{for}, odpowiedzialna za szukanie największego elementu w kolumnie, jak w wypadku eliminacji Gaussa z częściowym wyborem elementu głównego. Następnie algorytm wyznaczania rozkłau LU wygląda niemal identycznie jak faza eliminacji z tą różnicą, że macierz A jest wtedy odpowiednio modyfikowana. Wobec tego złożoność czasowa algorytmu to $O(n)$.
+
+\subsubsection{Złożoność pamięciowa}
+Uzasadnienie, że złożoność pamięciowa algorytmu wynosi $O(n)$ nasuwa się samo. Skoro dominującym czynnikiem jest tu macierz A, którą modyfikujemy in-place i w żadnym momencie nie potrzebujemy tworzenia dodatkowej kopii (z wyjątkiem macierzy permutacji, ale zostało już wytłumaczone dlaczego nie jest to problemem) albo nowej struktury to złożoność wynosi $O(n)$.
+
+\section{Eksperymenty}
+
+
+
+
 
 \end{document}
