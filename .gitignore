@@ -31,7 +31,7 @@ aod/.idea
 jftt/.idea
 jftt/list1/.idea
 jftt/kompilator/mw2025/
-
+jftt/kompilator/src/kompilator
 
 on/list5/Dane*
 
@@ -45,3 +45,8 @@ on/list5/Dane*
 *.fls
 *.aux
 *.fdb_latexmk
+
+
+*.yy.c
+*.tab.c
+*.tab.h
