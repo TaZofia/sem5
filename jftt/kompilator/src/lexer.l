@@ -59,8 +59,8 @@ O                 return O;
 ">="              return GE;
 "<="              return LE;
 
-[_a-z]+           return PIDENTIFIER;
-[0-9]+            return NUM;
+[_a-z]+           { yylval.str = strdup(yytext); return PIDENTIFIER; }
+[0-9]+            { yylval.num = atoll(yytext); return NUM;  }
 
 .                 ;          /* ignorujemy wszystko inne */
 

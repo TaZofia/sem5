@@ -1,9 +1,44 @@
+// na razie value jest tylko stringiem trzeba potem poprawić żeby mogło być też liczbą. 
+// Trzeba stworzyć odpowiedni własny typ
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 FILE *out;
 extern FILE *yyin;
+int yylex(void);
+
+
+
+typedef struct {
+    char name[64];
+    int address;
+    
+} Symbol;
+
+Symbol symbols[1024];
+int symbol_count = 0;
+
+int add_symbol(const char *name) {
+    if (symbol_count >= 1024) {
+        fprintf(stderr, "[ERROR] Too many variables(symbols).\n");
+        exit(1);
+    }
+    strcpy(symbols[symbol_count].name, name);
+    symbols[symbol_count].address = symbol_count;
+    return symbol_count++;
+}
+int get_symbol(const char* name) {
+    for(int i=0; i < symbol_count; i++){
+        if (strcmp(symbols[i].name, name) == 0) {
+            return symbols[i].address;
+        }
+    }
+    fprintf(stderr, "[ERROR] Undeclared variable.");
+    exit(1);
+}
 
 void yyerror(const char *s) {
     fprintf(stderr, "Bison error: %s\n", s);
@@ -11,10 +46,15 @@ void yyerror(const char *s) {
 %}
 
 
+%union {
+    char* str;
+    long long num;
+}
+
 %token WRITE
 %token READ
-%token PIDENTIFIER
-%token NUM
+%token <str> PIDENTIFIER
+%token <num> NUM
 %token PROGRAM
 %token IS
 %token IN
@@ -55,6 +95,9 @@ void yyerror(const char *s) {
 %token GE
 %token LE
 
+%type <str> value
+%type <str> identifier
+
 %%
 
 program_all:
@@ -75,24 +118,34 @@ commands:
     | command
     ;
 command:
-    READ identifier';'        { fprintf(out, "READ\n"); }
-    | WRITE value';'          { fprintf(out, "WRITE\n"); }
+    READ identifier ';'
+    {
+        int addr = get_symbol($2);
+        fprintf(out, "READ\n");
+        fprintf(out, "STORE %d\n", addr);
+    }
+    | WRITE value ';'         
+    { 
+        int addr = get_symbol($2);
+        fprintf(out, "LOAD %d\n", addr);
+        fprintf(out, "WRITE\n"); 
+    }
     ;
 
 declarations:
-    declarations ',' PIDENTIFIER
+    declarations ',' PIDENTIFIER                            { add_symbol($3); }
     | declarations ',' PIDENTIFIER '[' NUM ':' NUM ']'
-    | PIDENTIFIER
+    | PIDENTIFIER                                           { add_symbol($1); }
     | PIDENTIFIER '[' NUM ':' NUM ']'
     ;
 
 value:
-    NUM
-    | identifier
+    //NUM
+    | identifier    { $$ = $1; }
     ;
 
 identifier:
-    PIDENTIFIER
+    PIDENTIFIER    { $$ = $1; }
     ;
 %%
 
@@ -116,6 +169,7 @@ int main(int argc, char **argv) {
     }
 
     yyparse();
+    fprintf(out, "HALT\n");
 
     fclose(yyin);
     fclose(out);
