@@ -5,17 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "types.h"
 
 FILE *out;
 extern FILE *yyin;
 int yylex(void);
 
 
-
 typedef struct {
     char name[64];
     int address;
-    
 } Symbol;
 
 Symbol symbols[1024];
@@ -40,25 +39,10 @@ int get_symbol(const char* name) {
     exit(1);
 }
 
-/* Funkcja ma na celu zapisanie w rejestrze ra wartości równej n*/
-void gen_this_number(long long n) {
-    if (n < 0) {
-        fprintf(stderr, "[ERROR] Negative constants not supported: %lld\n", n);
-        exit(1);
-    }
 
-    fprintf(out, "RST c\n");      
+void manage_value(Val v);
 
-    for (long long i = 0; i < n; i++) {
-        fprintf(out, "INC c\n");  
-    }
-
-    fprintf(out, "SWP c\n");     
-}
-
-
-void manage_value()  {}  // TO DO przerzucić wszystko z value tutaj 
-
+void gen_this_number(long long n);
 
 void yyerror(const char *s) {
     fprintf(stderr, "Bison error: %s\n", s);
@@ -69,11 +53,7 @@ void yyerror(const char *s) {
 %union {
     char* str;
     long long num;
-    struct {
-        int is_num;   // 1 = liczba, 0 = zmienna
-        long long num;
-        char* idn;
-    } val;
+    Val val;
 }
 
 %token WRITE
@@ -154,12 +134,7 @@ command:
         fprintf(out, "STORE %d\n", addr);
     }   
     | WRITE value ';'   {                      /* TO DO obsłużyć WRITE kiedy value to liczba a nie pidentifier */
-        if($2.is_num) {
-            gen_this_number($2.num);
-        } else {
-            int addr = get_symbol($2.idn);
-            fprintf(out, "LOAD %d\n", addr);
-        }
+        manage_value($2);
         fprintf(out, "WRITE\n"); 
     }
     ;
@@ -173,35 +148,27 @@ declarations:
 
 expression:
     value {
-        if($1.is_num) {
-            gen_this_number($1.num);
-        } else {
-            int addr = get_symbol($1.idn);
-            fprintf(out, "LOAD %d\n", addr);
-        }
+        manage_value($1);
     }
     | value PLUS value {
-        if($1.is_num) {
-            gen_this_number($1.num);
-        } else {
-            int addr = get_symbol($1.idn);
-            fprintf(out, "LOAD %d\n", addr);
-        }
+        manage_value($1);
         fprintf(out, "SWP b\n");         /* wrzucamy pierwsze value do rejestru b*/
-        if($3.is_num) {
-            gen_this_number($3.num);
-        } else {
-            int addr = get_symbol($3.idn);
-            fprintf(out, "LOAD %d\n", addr);
-        }
+        manage_value($3);
         fprintf(out, "ADD b\n");            /* dodajemy do rejestru a to co mamy w b */
 
         $$.is_num = 0;              /* bo wynik na razie jest w rejestrze, czyli jest tymczasowy */
         $$.idn = NULL;
-
     }
-    | value MINUS value
-    | value TIMES value
+    | value MINUS value {
+        manage_value($3);
+        fprintf(out, "SWP b\n");
+        manage_value($1);
+        fprintf(out, "SUB b\n"); 
+
+        $$.is_num = 0;
+        $$.idn = NULL;
+    }
+    | value TIMES value 
     | value DIV value
     | value MOD value 
     ;
@@ -222,6 +189,34 @@ identifier:
     PIDENTIFIER    { $$ = $1; }
     ;
 %%
+
+
+/* Funkcja ma na celu zapisanie w rejestrze ra wartości równej n*/
+void gen_this_number(long long n) {
+    if (n < 0) {
+        fprintf(stderr, "[ERROR] Negative constants not supported: %lld\n", n);
+        exit(1);
+    }
+
+    fprintf(out, "RST c\n");      
+
+    for (long long i = 0; i < n; i++) {
+        fprintf(out, "INC c\n");  
+    }
+
+    fprintf(out, "SWP c\n");     
+}
+
+/* funkcja odpowiedzialna za załadowanie liczby/wartości zmiennej do rejestru ra */
+void manage_value(Val v) {
+    if(v.is_num) {
+            gen_this_number(v.num);
+        } else {
+            int addr = get_symbol(v.idn);
+            fprintf(out, "LOAD %d\n", addr);
+        }
+}  
+
 
 int main(int argc, char **argv) {
 

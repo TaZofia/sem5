@@ -50,3 +50,5 @@ on/list5/Dane*
 *.yy.c
 *.tab.c
 *.tab.h
+*.yy.o
+*.tab.o
