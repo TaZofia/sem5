@@ -1,6 +1,9 @@
 PROGRAM IS
-    x
+    x, y, z
 IN
     READ x;
-    WRITE x;
+    READ y;
+    y := 2;
+    z := x + y;
+    WRITE z;
 END

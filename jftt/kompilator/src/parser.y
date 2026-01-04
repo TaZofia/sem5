@@ -40,6 +40,26 @@ int get_symbol(const char* name) {
     exit(1);
 }
 
+/* Funkcja ma na celu zapisanie w rejestrze ra wartości równej n*/
+void gen_this_number(long long n) {
+    if (n < 0) {
+        fprintf(stderr, "[ERROR] Negative constants not supported: %lld\n", n);
+        exit(1);
+    }
+
+    fprintf(out, "RST c\n");      
+
+    for (long long i = 0; i < n; i++) {
+        fprintf(out, "INC c\n");  
+    }
+
+    fprintf(out, "SWP c\n");     
+}
+
+
+void manage_value()  {}  // TO DO przerzucić wszystko z value tutaj 
+
+
 void yyerror(const char *s) {
     fprintf(stderr, "Bison error: %s\n", s);
 }
@@ -49,6 +69,11 @@ void yyerror(const char *s) {
 %union {
     char* str;
     long long num;
+    struct {
+        int is_num;   // 1 = liczba, 0 = zmienna
+        long long num;
+        char* idn;
+    } val;
 }
 
 %token WRITE
@@ -95,8 +120,9 @@ void yyerror(const char *s) {
 %token GE
 %token LE
 
-%type <str> value
+%type <val> value
 %type <str> identifier
+%type <val> expression
 
 %%
 
@@ -118,16 +144,22 @@ commands:
     | command
     ;
 command:
-    READ identifier ';'
-    {
+    identifier ASSIGN expression ';' {
+        int addr = get_symbol($1);
+        fprintf(out, "STORE %d\n", addr);
+    }
+    | READ identifier ';' {
         int addr = get_symbol($2);
         fprintf(out, "READ\n");
         fprintf(out, "STORE %d\n", addr);
-    }
-    | WRITE value ';'         
-    { 
-        int addr = get_symbol($2);
-        fprintf(out, "LOAD %d\n", addr);
+    }   
+    | WRITE value ';'   {                      /* TO DO obsłużyć WRITE kiedy value to liczba a nie pidentifier */
+        if($2.is_num) {
+            gen_this_number($2.num);
+        } else {
+            int addr = get_symbol($2.idn);
+            fprintf(out, "LOAD %d\n", addr);
+        }
         fprintf(out, "WRITE\n"); 
     }
     ;
@@ -139,9 +171,51 @@ declarations:
     | PIDENTIFIER '[' NUM ':' NUM ']'
     ;
 
+expression:
+    value {
+        if($1.is_num) {
+            gen_this_number($1.num);
+        } else {
+            int addr = get_symbol($1.idn);
+            fprintf(out, "LOAD %d\n", addr);
+        }
+    }
+    | value PLUS value {
+        if($1.is_num) {
+            gen_this_number($1.num);
+        } else {
+            int addr = get_symbol($1.idn);
+            fprintf(out, "LOAD %d\n", addr);
+        }
+        fprintf(out, "SWP b\n");         /* wrzucamy pierwsze value do rejestru b*/
+        if($3.is_num) {
+            gen_this_number($3.num);
+        } else {
+            int addr = get_symbol($3.idn);
+            fprintf(out, "LOAD %d\n", addr);
+        }
+        fprintf(out, "ADD b\n");            /* dodajemy do rejestru a to co mamy w b */
+
+        $$.is_num = 0;              /* bo wynik na razie jest w rejestrze, czyli jest tymczasowy */
+        $$.idn = NULL;
+
+    }
+    | value MINUS value
+    | value TIMES value
+    | value DIV value
+    | value MOD value 
+    ;
+
 value:
-    //NUM
-    | identifier    { $$ = $1; }
+    NUM {
+        $$.is_num = 1;
+        $$.num = $1;
+        $$.idn = NULL;
+    }
+    | identifier {
+        $$.is_num = 0;
+        $$.idn = $1;
+    }
     ;
 
 identifier:
