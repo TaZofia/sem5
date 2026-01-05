@@ -8,12 +8,6 @@
 #include <stdarg.h>
 #include "types.h"
 
- // tymczasowy adres do pamięci  
- // będzie symulował komórkę w pamięci przeznaczoną na chwilowe zapisywanie tam stanu obliczeń 
- // musi być po zmiennych
-int TMP_ADDR = -1;     
-int TMP2_ADDR = -1;
-
 
 FILE *out;
 extern FILE *yyin;
@@ -225,7 +219,7 @@ expression:
         manage_value($1);               // ra = 1
         emit("SWP b\n");                // rb = 1
         manage_value($3);               // ra = 3
-        emit("SWP b\n");                // ra = 1, rb = 3
+        emit("SWP b\n"); 
         gen_mul();          // odpowiednie liczby już są w odpowiednich rejestrach
 
         $$.is_num = 0;
@@ -295,99 +289,41 @@ void manage_value(Val v) {
     }
 } 
 
-/* Funkcja odpowiedzialna za mnożenie dwóch liczb. Zakładamy, że jedna jest w ra oraz druga jest w rb. */
+/* Funkcja odpowiedzialna za mnożenie dwóch liczb. */
 void gen_mul() {
-    /* Wejście: ra = a, rb = b
-       Wyjście: ra = a * b
-    */
-    TMP_ADDR = symbol_count;
+    emit("RST c\n"); 
 
-    /* rc = wynik = 0 */
-    emit("RST c\n");
+    int start = line; 
+    emit("JZERO 0\n"); 
+    emit("SWP d\n"); 
+    emit("RST a\n"); 
+    emit("ADD d\n"); 
+    emit("SHR a\n"); 
+    emit("SHL a\n"); 
+    emit("SWP d\n"); 
+    emit("SUB d\n");
 
-    /* rd = a (kopiujemy a z ra do rd) */
-    emit("SWP d\n");     /* rd = a, ra = stare d */
+    int even = line; 
+    emit("JZERO 0\n"); 
+    emit("SWP c\n"); 
+    emit("ADD b\n"); 
+    emit("SWP c\n");
 
-    /* przenosimy b do pamięci TMP, rb po tym nie jest już potrzebne */
-    emit("SWP b\n");                     /* ra = b */
-    emit("STORE %d\n", TMP_ADDR);        /* p[TMP_ADDR] = b */
+    patch_jump_zero(even, line);
 
-    int loop_start = line;
+    emit("SWP b\n"); 
+    emit("SHL a\n"); 
+    emit("SWP b\n"); 
+    emit("RST a\n"); 
+    emit("ADD d\n");
+    emit("SHR a\n");
 
-    /* ładowanie b z pamięci i sprawdzenie, czy b == 0 */
-    emit("LOAD %d\n", TMP_ADDR);         /* ra = b */
-    int jump_end = emit_jump_placeholder("JZERO");  /* jeśli b == 0 → koniec */
+    emit("JUMP %d\n", start);
 
-    /* teraz w ra mamy b > 0 */
+    patch_jump_zero(start, line);
 
-    /* obliczamy floor(b/2) i parity(b):
-
-       Krok 1: ra zawiera b.
-       SHR a: ra = floor(b/2)
-       SWP e: re = floor(b/2)
-       LOAD TMP: ra = b
-       SHL e: re = 2 * floor(b/2)
-       SUB e: ra = b - 2*floor(b/2) ∈ {0,1}  (parity)
-    */
-
-    emit("SHR a\n");                     /* ra = floor(b/2) */
-    emit("SWP e\n");                     /* re = floor(b/2), ra = stare e */
-
-    emit("LOAD %d\n", TMP_ADDR);         /* ra = b */
-    emit("SHL e\n");                     /* re = 2 * floor(b/2) */
-    emit("SUB e\n");                     /* ra = parity(b) (0 lub 1) */
-
-    /* Teraz:
-       ra = parity(b)
-       re = 2*floor(b/2)
-       floor(b/2) jeszcze znamy tylko pośrednio,
-       ale możemy go odzyskać:
-
-       re = 2*floor(b/2)
-       SHR e: re = floor(b/2)
-
-       Potem chcemy:
-         p[TMP_ADDR] = floor(b/2)  (nowe b)
-         ra = parity(b)            (do JZERO)
-    */
-
-    emit("SHR e\n");                     /* re = floor(b/2) */
-
-    /* zamieniamy, żeby zapisać floor(b/2) do pamięci */
-    emit("SWP e\n");                     /* ra = floor(b/2), re = parity(b) */
-    emit("STORE %d\n", TMP_ADDR);        /* p[TMP_ADDR] = floor(b/2) (nowe b) */
-    emit("SWP e\n");                     /* ra = parity(b), re = b/2 (niepotrzebne dalej) */
-
-    /* jeśli parity(b) == 0 → pomijamy dodawanie */
-    int jump_skip_add = emit_jump_placeholder("JZERO");
-
-    /* jeśli parity(b) == 1 → dodajemy a do wyniku:
-         rc = rc + a
-
-       Mamy:
-         rd = a
-         rc = wynik
-         ra = 1 (parity != 0)
-    */
-
-    emit("SWP c\n");                     /* ra = rc, rc = parity(b) (1) */
-    emit("ADD d\n");                     /* ra = rc + a */
-    emit("SWP c\n");                     /* rc = nowy wynik, ra = 1 (nieistotne) */
-
-    /* miejsce, gdzie lądujemy, jeśli parity(b) == 0 (skip add) */
-    patch_jump_zero(jump_skip_add, line);
-
-    /* a = 2*a → rd = 2 * rd */
-    emit("SHL d\n");
-
-    /* skok na początek pętli */
-    emit("JUMP %d\n", loop_start);
-
-    /* koniec mnożenia: b == 0 */
-    patch_jump_zero(jump_end, line);
-
-    /* wynik w rc przenosimy do ra */
-    emit("SWP c\n");                     /* ra = wynik */
+    emit("RST a\n");
+    emit("ADD c\n");
 }
 
 
