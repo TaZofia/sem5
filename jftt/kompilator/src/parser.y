@@ -232,21 +232,19 @@ expression:
         $$.idn = NULL;
     }
     | value DIV value {
-        manage_value($1);               // ra = 1
-        emit("SWP b\n");                // rb = 1
-        manage_value($3);               // ra = 3
-        emit("SWP b\n");                // ra = 1, rb = 3
-        gen_div(0);        
+        manage_value($1);               
+        emit("SWP b\n"); 
+        manage_value($3);   
+        gen_divmod(0);     // - 0 bo nie chcemy mieć reszty   
 
         $$.is_num = 0;
         $$.idn = NULL;
     }
     | value MOD value {
-        manage_value($1);               // ra = 1
-        emit("SWP b\n");                // rb = 1
-        manage_value($3);               // ra = 3
-        emit("SWP b\n");                // ra = 1, rb = 3
-        //gen_divmod(1);        
+        manage_value($1);       
+        emit("SWP b\n");               
+        manage_value($3);               
+        gen_divmod(1);        
 
         $$.is_num = 0;
         $$.idn = NULL;
@@ -392,26 +390,76 @@ void gen_mul() {
     emit("SWP c\n");                     /* ra = wynik */
 }
 
-/* Generuje sekwencję DIV value zgodnie z kodem kolegi,
-   używając emit(...) oraz funkcji patch_jump*, patch_jump_zero.
-*/
-void gen_div(void) {
-    int zero = line; emit("JZERO 0\n");
-    emit("RST c\n"); emit("SWP d\n"); emit("RST e\n"); emit("INC e\n");
-    int as = line; emit("RST a\n"); emit("ADD d\n"); emit("SUB b\n");
-    int aj = line; emit("JPOS 0\n");
-    emit("SWP d\n"); emit("SHL a\n"); emit("SWP d\n"); emit("SWP e\n"); emit("SHL a\n"); emit("SWP e\n"); emit("JUMP %d\n", as);
+
+void gen_divmod(int want_mod) {
+    //want_mod = 1 - tak, chcemy resztę, 0 - nie
+    int zero = line; 
+    emit("JZERO 0\n"); 
+    emit("RST c\n"); 
+    emit("SWP d\n"); 
+    emit("RST e\n"); 
+    emit("INC e\n");   
+
+    int as = line; 
+    emit("RST a\n"); 
+    emit("ADD d\n"); 
+    emit("SUB b\n"); 
+
+    int aj = line; 
+    emit("JPOS 0\n"); 
+
+    emit("SWP d\n"); 
+    emit("SHL a\n"); 
+    emit("SWP d\n"); 
+    emit("SWP e\n"); 
+    emit("SHL a\n"); 
+    emit("SWP e\n"); 
+    emit("JUMP %d\n", as);
+
     patch_jump_pos(aj, line);
-    int cs = line; emit("RST a\n"); emit("ADD e\n");
-    int ce = line; emit("JZERO 0\n");
-    emit("RST a\n"); emit("ADD d\n"); emit("SUB b\n");
-    int ss = line; emit("JPOS 0\n");
-    emit("SWP b\n"); emit("SUB d\n"); emit("SWP b\n"); emit("SWP c\n"); emit("ADD e\n"); emit("SWP c\n");
+
+    int cs = line; 
+    emit("RST a\n"); 
+    emit("ADD e\n");
+
+    int ce = line; 
+    emit("JZERO 0\n");
+
+    emit("RST a\n"); 
+    emit("ADD d\n"); 
+    emit("SUB b\n");
+
+    int ss = line; 
+    emit("JPOS 0\n"); 
+
+    emit("SWP b\n"); 
+    emit("SUB d\n"); 
+    emit("SWP b\n"); 
+    emit("SWP c\n"); 
+    emit("ADD e\n"); 
+    emit("SWP c\n");
+
     patch_jump_pos(ss, line);
-    emit("SWP d\n"); emit("SHR a\n"); emit("SWP d\n"); emit("SWP e\n"); emit("SHR a\n"); emit("SWP e\n"); emit("JUMP %d\n", cs);
-    patch_jump(ce, line); patch_jump_zero(zero, line);
-    emit("RST a\n"); emit("ADD c\n");
+
+    emit("SWP d\n"); 
+    emit("SHR a\n"); 
+    emit("SWP d\n"); 
+    emit("SWP e\n"); 
+    emit("SHR a\n"); 
+    emit("SWP e\n"); 
+    emit("JUMP %d\n", cs);
+
+    patch_jump_zero(ce, line); 
+    patch_jump_zero(zero, line); 
+
+    emit("RST a\n"); 
+    emit("ADD c\n");
+
+    if(want_mod) {
+        emit("SWP b\n");
+    }
 }
+
 
 
 
