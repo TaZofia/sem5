@@ -58,28 +58,8 @@ b = read_b(pair[2])
 A2 = read_A(pair[1])
 println("po wczytaniu")
 
-"""
-for r in eachrow(A) 
-    for e in r
+#x1 = gauss(deepcopy(A), deepcopy(b))
 
-        if e != 0 
-            print("X ")
-        else
-            print("O ")
-        end
-    end
-    print("\n")
-end
-
-
-res1 = gauss(deepcopy(A), deepcopy(b))
-
-res2 = solve_by_lu_with_main_element!(deepcopy(A2), deepcopy(b))
-
-for i in 1:length(res1) 
-    println("x$i = ", res1[i], "  r$i = ", res2[i]) 
-end
-"""
-_, elapsed, _, _, _ = @timed gauss_elimination(A2, b)
+_, elapsed,_, _, _ = @timed solve_by_lu_with_main_element!(deepcopy(A2), deepcopy(b))
 
 println("czas: ", elapsed)
