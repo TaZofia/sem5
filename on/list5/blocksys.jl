@@ -112,7 +112,6 @@ b - wektor prawych stron długości n
 function gauss_elimination_with_main_element(A::BlockMatrix, b::Vector{Float64})
     M = A.matrix
     n = A.size
-    # Konwersja CSC -> wierszowe mapy (Dict)
     rows = [Dict{Int,Float64}() for _ in 1:n]
     for col in 1:M.n
         p1 = M.colptr[col]

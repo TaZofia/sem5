@@ -75,34 +75,25 @@ for arr in paths
 end
 
 
-plt_time = plot(sizes, t_gauss, label="Gauss", marker=:o)
-plot!(sizes, t_gauss_pivot, label="Gauss z wyborem", marker=:diamond)
+plt_time = plot(sizes, t_gauss, xscale =:log10, yscale=:log10, label="Gauss", marker=:o, legend=:left)
+plot!(sizes, t_gauss_main, label="Gauss z wyborem", marker=:diamond)
 plot!(sizes, t_lu, label="LU", marker=:star5)
-plot!(sizes, t_lu_pivot, label="LU z wyborem", marker=:square)
+plot!(sizes, t_lu_main, label="LU z wyborem", marker=:square)
 
 xlabel!("Rozmiar macierzy (n)")
 ylabel!("Czas wykonania (s)")
 title!("Czas wykonania algorytmów")
 
-xscale!(:log10)   
-yscale!(:log10)
 
-legend(:topleft)
-
-plt_mem = plot(sizes, m_gauss, label="Gauss", marker=:o)
-plot!(sizes, m_gauss_pivot, label="Gauss z wyborem", marker=:diamond)
+plt_mem = plot(sizes, m_gauss, xscale =:log10, yscale=:log10, label="Gauss", marker=:o, legend=:left)
+plot!(sizes, m_gauss_main, label="Gauss z wyborem", marker=:diamond)
 plot!(sizes, m_lu, label="LU", marker=:star5)
-plot!(sizes, m_lu_pivot, label="LU z wyborem", marker=:square)
+plot!(sizes, m_lu_main, label="LU z wyborem", marker=:square)
 
 xlabel!("Rozmiar macierzy (n)")
 ylabel!("Alokacje pamięci (B)")
 title!("Alokacje pamięci (mediana @timed bytes)")
 
-xscale!(:log10)
-yscale!(:log10)
 
-legend(:topleft)
-
-
-display(plt_time)
-display(plt_mem)
+savefig(plt_time, ".\\results\\time_plot.png")
+savefig(plt_mem, ".\\results\\mem_plot.png")

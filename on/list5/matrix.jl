@@ -4,8 +4,6 @@ export BlockMatrix, get_blockmatrix, get_bottom_row, get_top_row, get_first_colu
 
 using SparseArrays
 
-
-
 """
 Struktura odzwierciedlająca macierz zadaną na liście
 """
@@ -40,21 +38,5 @@ function multiply_matrix_by_vector(M::BlockMatrix, V::Vector{Float64})
     end
     return R
 end
-
-function get_blockmatrix(size::Int, block_size::Int)
-    block_no = Int(size / block_size)
-    A = spzeros(size, size)
-    return BlockMatrix(A, size, block_size, block_no)
-end
-
-function get_blockmatrix(size::Int, block_size::Int, Vs::Vector{Tuple{Int, Int, Float64}})
-    M = get_blockmatrix(size, block_size)
-    for (i, j, v) in Vs
-        M[i, j] = v
-    end
-    return M
-end
-
-
 
 end
