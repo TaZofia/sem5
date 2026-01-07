@@ -22,6 +22,31 @@ typedef struct {
 Symbol symbols[1024];
 int symbol_count = 0;
 
+
+typedef struct {
+    char name[64];
+    int start_line;       // linia, od której zaczyna się procedura (CALL tu skacze)
+    int return_addr_loc;  // adres w pamięci na przechowanie adresu powrotu
+} Procedure;
+
+Procedure procedures[256];
+int procedure_count = 0;
+
+char current_proc_name[64] = "";
+int main_jump_pos = -1;            // pozycja maina
+
+/* Funkcja do szukania procedury */
+int find_procedure(const char* name) {
+    for (int i = 0; i < procedure_count; i++) {
+        if (strcmp(procedures[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+
+
+
 int add_symbol(const char *name) {
     if (symbol_count >= 1024) {
         fprintf(stderr, "[ERROR] Too many variables(symbols).\n");
@@ -154,16 +179,50 @@ void yyerror(const char *s) {
 %%
 
 program_all:
+    {
+        // Skok nad wszystkie procedury do main
+        main_jump_pos = emit_jump_placeholder("JUMP");
+    }
     procedures main
     ;
 
 procedures:
-      /* puste */
-    ;
+    procedures PROCEDURE proc_head IS declarations IN commands END {
+        int index = find_procedure(current_proc_name);
+        if (index < 0) {
+            fprintf(stderr, "[ERROR] Unknown procedure '%s' at end.\n", current_proc_name);
+            exit(1);
+        }
+        emit("LOAD %d\n", procedures[index].return_addr_loc);
+        emit("RTRN\n");
+        current_proc_name[0] = '\0';
+    }
+    | procedures PROCEDURE proc_head IS IN commands END {
+        int index = find_procedure(current_proc_name);
+        if (index < 0) {
+            fprintf(stderr, "[ERROR] Unknown procedure '%s' at end.\n", current_proc_name);
+            exit(1);
+        }
+        emit("LOAD %d\n", procedures[index].return_addr_loc);
+        emit("RTRN\n");
+        current_proc_name[0] = '\0';
+    }
+    | ;
 
 main:
-    PROGRAM IS declarations IN commands END 
-    | PROGRAM IS IN commands END 
+    PROGRAM IS declarations IN {
+        // Łatamy początkowy skok nad procedurami
+        if (main_jump_pos >= 0) {
+            patch_jump(main_jump_pos, line);
+        }
+        current_proc_name[0] = '\0';
+    } commands END 
+    | PROGRAM IS IN {
+        if (main_jump_pos >= 0) {
+            patch_jump(main_jump_pos, line);
+        }
+        current_proc_name[0] = '\0';
+    } commands END 
     ;
 
 commands:
@@ -184,6 +243,55 @@ command:
         manage_value($2);
         emit("WRITE\n"); 
     }
+    | proc_call ';'
+    ;
+
+proc_head:
+    PIDENTIFIER '(' args_decl ')' {
+        char* name = $1;
+
+        if (find_procedure(name) != -1) {
+            fprintf(stderr, "[ERROR] Redefinition of procedure '%s'.\n", name);
+            exit(1);
+        }
+
+        // Rejestrujemy procedurę
+        Procedure *p = &procedures[procedure_count++];
+        strcpy(p->name, name);
+        p->start_line = line;   // CALL będzie skakał tutaj
+
+        // Alokujemy komórkę na adres powrotu
+        char ret_name[80];
+        snprintf(ret_name, sizeof(ret_name), "__ret_%s", name);
+        p->return_addr_loc = add_symbol(ret_name);
+
+        // Po CALL w rejestrze (np. ra) jest adres powrotu – zapisujemy go
+        emit("STORE %d\n", p->return_addr_loc);
+
+        strcpy(current_proc_name, name);
+        free(name);
+    }
+    ;
+
+proc_call:
+    PIDENTIFIER '(' args ')'{
+        char* name_of_called_proc = $1;
+        int idx = find_procedure(name_of_called_proc);
+        if (idx < 0) {
+            fprintf(stderr, "[ERROR] Call to undefined procedure '%s'.\n", name_of_called_proc);
+            exit(1);
+        }
+        if (current_proc_name[0] != '\0' && strcmp(name_of_called_proc, current_proc_name) == 0) {
+            fprintf(stderr, "[ERROR] Recursive call of procedure '%s'.\n", name_of_called_proc);
+            exit(1);
+        }
+
+        // TODO: obsługa parametrów (IN-OUT, tablice)
+        // ale samo wywołanie procedury to:
+        emit("CALL %d\n", procedures[idx].start_line);
+
+        free($1);
+    }
     ;
 
 declarations:
@@ -192,6 +300,23 @@ declarations:
     | PIDENTIFIER                                           { add_symbol($1); }
     | PIDENTIFIER '[' NUM ':' NUM ']'
     ;
+
+args_decl:
+    args_decl ',' type PIDENTIFIER
+    | type PIDENTIFIER
+    |
+    ;
+
+type:
+    T
+    | I
+    | O
+    ;
+
+args:
+    args ',' PIDENTIFIER
+    | PIDENTIFIER
+    | ;
 
 expression:
     value {

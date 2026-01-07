@@ -1,10 +1,8 @@
-PROGRAM IS
-    x, y, a, b
-IN
-    READ x;
-    READ y;
-    a := x + y;
-    WRITE a;
-    b := x - y;
-    WRITE b;
+PROCEDURE foo() IS IN
+    WRITE 2;
+END
+
+PROGRAM IS IN
+    WRITE 1;
+    foo();
 END
