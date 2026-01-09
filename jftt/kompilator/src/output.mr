@@ -1,19 +1,63 @@
-READ
+JUMP 36
 STORE 0
-READ
-STORE 1
-LOAD 0
-SWP b
-LOAD 1
-ADD b
+RST c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+SWP c
 STORE 2
-LOAD 2
-WRITE
 LOAD 1
+SWP h
+RLOAD h
 SWP b
-LOAD 0
+LOAD 2
 SUB b
 STORE 3
 LOAD 3
 WRITE
+LOAD 0
+RTRN
+RST c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+INC c
+SWP c
+STORE 4
+RST c
+INC c
+INC c
+INC c
+INC c
+SWP c
+STORE 1
+CALL 1
 HALT

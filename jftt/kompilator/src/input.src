@@ -1,8 +1,14 @@
-PROCEDURE foo() IS IN
-    WRITE 2;
+PROCEDURE test(x) IS 
+    a, b
+IN
+    a := 20;
+    b := a - x;
+    WRITE b;
 END
 
-PROGRAM IS IN
-    WRITE 1;
-    foo();
+PROGRAM IS
+    temp, z
+IN
+    temp := 15;
+    test(temp);
 END
