@@ -286,6 +286,8 @@ proc_call:
             exit(1);
         }
 
+        
+
         // TODO: obsługa parametrów (IN-OUT, tablice)
         // ale samo wywołanie procedury to:
         emit("CALL %d\n", procedures[idx].start_line);
