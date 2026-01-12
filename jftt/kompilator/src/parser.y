@@ -21,6 +21,7 @@ int yylex(void);
 #define F_CONST 2  // I (Input/Const)
 #define F_OUT   4  // O (Output)
 
+#define MAX_NESTED_LOOPS 100
 
 typedef struct {
     char name[64];
@@ -36,7 +37,16 @@ Symbol symbols[1024];
 int symbol_count = 0;
 int memory_ptr = 0;     // pierwszy wolny adres w pamięci
 
+typedef struct {
+    int start_line;      // Linia początku pętli (do skoku JUMP)
+    int jump_exit_pos;   // Pozycja instrukcji skoku warunkowego (do załatania)
+    int iter_addr;       // Adres pamięci iteratora
+    int limit_addr;      // Adres pamięci limitu
+    int is_downto;       // 0 = TO, 1 = DOWNTO
+} LoopContext;
 
+LoopContext loop_stack[100];
+int loop_top = -1;
 
 typedef struct {
     char name[64];
@@ -250,30 +260,72 @@ int emit_jump_placeholder(const char* instr) {
 }
 
 void patch_jump(int pos, int target) {
+    
+    char *old_instr = program[pos];
+    
+    char opcode[32];
+    if (sscanf(old_instr, "%s", opcode) != 1) {
+        fprintf(stderr, "[INTERNAL ERROR] Cannot parse instruction at line %d: %s\n", pos, old_instr);
+        exit(1);
+    }
+
     char buf[256];
-    snprintf(buf, sizeof(buf), "JUMP %d\n", target);
+    snprintf(buf, sizeof(buf), "%s %d\n", opcode, target);
+
     free(program[pos]);
     program[pos] = strdup(buf);
 }
 
-void patch_jump_zero(int pos, int target) {
-    char buf[256];
-    snprintf(buf, sizeof(buf), "JZERO %d\n", target);
-    free(program[pos]);
-    program[pos] = strdup(buf);
+/* Funckje pomocnicze dla for loop */
+char* iterator_stack[MAX_NESTED_LOOPS];
+int iterator_top = -1;
+
+void push_iterator(char* name) {
+    if (iterator_top < MAX_NESTED_LOOPS - 1) {
+        iterator_stack[++iterator_top] = strdup(name);
+    } else {
+        yyerror("Too many nested loops.");
+    }
 }
 
-void patch_jump_pos(int pos, int target) {
-    char buf[256];
-    snprintf(buf, sizeof(buf), "JPOS %d\n", target);
-    free(program[pos]);
-    program[pos] = strdup(buf);
+void pop_iterator() {
+    if (iterator_top >= 0) {
+        // free(iterator_stack[iterator_top]); // Opcjonalnie, jeśli chcesz czyścić pamięć
+        iterator_top--;
+    }
 }
 
+// Funkcja sprawdzająca, czy próbujemy zmienić iterator
+void check_iterator_modification(char* name) {
+    for (int i = 0; i <= iterator_top; i++) {
+        if (strcmp(iterator_stack[i], name) == 0) {
+            char buf[100];
+            sprintf(buf, "Blad: Proba modyfikacji iteratora petli '%s' wewnatrz petli!", name);
+            yyerror(buf);
+        }
+    }
+}
+void push_loop(int start, int exit_pos, int iter, int limit, int downto) {
+    if (loop_top >= 99) { 
+        fprintf(stderr, "[ERROR] To many nested loops.\n");
+        exit(1); 
+    }
+    loop_top++;
+    loop_stack[loop_top].start_line = start;
+    loop_stack[loop_top].jump_exit_pos = exit_pos;
+    loop_stack[loop_top].iter_addr = iter;
+    loop_stack[loop_top].limit_addr = limit;
+    loop_stack[loop_top].is_downto = downto;
+}
+
+LoopContext pop_loop() {
+    if (loop_top < 0) { yyerror("[INTERNAL ERROR] Empty stack"); exit(1); }
+    return loop_stack[loop_top--];
+}
 
 
 void yyerror(const char *s) {
-    fprintf(stderr, "Bison error: %s\n", s);
+    fprintf(stderr, "[ERROR]: %s\n", s);
 }
 %}
 
@@ -337,6 +389,7 @@ void yyerror(const char *s) {
 %type <val> expression
 %type <flags> type
 %type <id_info> identifier
+%type <num> condition
 
 %%
 
@@ -409,6 +462,110 @@ command:
         
         s->is_init = 1;     // Już zainicjalizowana
         free($1);
+    }
+    | IF condition THEN commands ELSE {
+       $<num>$ = emit_jump_placeholder("JUMP");
+        patch_jump($2, line);
+    } commands ENDIF {
+        patch_jump($<num>6, line);
+    }
+    | IF condition THEN commands ENDIF {
+        patch_jump($2, line);
+    }
+    | WHILE {
+        $<num>$ = line;
+    } condition DO commands ENDWHILE {
+        emit("JUMP %lld\n", $<num>2);
+        patch_jump($3, line);
+    }
+    | REPEAT {
+        $<num>$ = line;
+    } commands UNTIL condition ';' {
+        patch_jump($5, $<num>2);
+    }
+    | FOR PIDENTIFIER FROM value TO value DO {
+        int iter_addr = get_symbol_addr($2);
+        manage_value($4);
+        emit("STORE %d\n", iter_addr);
+
+        int limit_addr = memory_ptr++;
+        manage_value($6);
+        emit("STORE %d\n", limit_addr);
+
+        // zabezpieczenie iteratora przed modyfikacją
+        push_iterator($2);
+
+        int loop_start = line;
+
+        emit("LOAD %d\n", iter_addr);   // Załaduj iterator
+        emit("SWP b\n");                // rb = iterator
+        emit("LOAD %d\n", limit_addr);  // Załaduj limit
+        emit("SWP b\n");                // ra = iterator, rb = limit
+        emit("SUB b\n");
+
+        int jump_exit = emit_jump_placeholder("JPOS");
+
+        push_loop(loop_start, jump_exit, iter_addr, limit_addr, 0);
+
+    } commands ENDFOR {
+        LoopContext ctx = pop_loop();
+
+        emit("LOAD %d\n", ctx.iter_addr);
+        emit("INC a\n");
+        emit("STORE %d\n", ctx.iter_addr);
+
+        char buf[32];
+        sprintf(buf, "JUMP %d\n", ctx.start_line);
+        emit(buf);
+
+        patch_jump(ctx.jump_exit_pos, line);
+        pop_iterator();        
+    }
+    | FOR PIDENTIFIER FROM value DOWNTO value DO {
+        int iter_addr = get_symbol_addr($2);
+        manage_value($4);
+        emit("STORE %d\n", iter_addr);
+
+        int limit_addr = memory_ptr++;
+        manage_value($6);
+        emit("STORE %d\n", limit_addr);
+
+        push_iterator($2);
+
+        int loop_start = line;
+
+        emit("LOAD %d\n", limit_addr);  // ra = limit
+        emit("SWP b\n");                // rb = limit
+        emit("LOAD %d\n", iter_addr);   // ra = iterator
+        emit("SWP b\n");                // ra = limit, rb = iterator
+        emit("SUB b\n");                // ra = limit - iterator
+
+        int jump_exit = emit_jump_placeholder("JPOS");
+        push_loop(loop_start, jump_exit, iter_addr, limit_addr, 1);
+
+    } commands ENDFOR {
+
+        LoopContext ctx = pop_loop();
+
+        emit("LOAD %d\n", ctx.iter_addr);
+        emit("SWP b\n");
+        emit("LOAD %d\n", ctx.limit_addr);
+        emit("SWP b\n");    // ra = iterator, rb = limit
+        emit("SUB b\n");    // ra = iterator - limit
+
+        int jump_break = emit_jump_placeholder("JZERO");
+        emit("LOAD %d\n", ctx.iter_addr);
+        emit("DEC a\n");    
+        emit("STORE %d\n", ctx.iter_addr);
+
+        char buf[32];
+        sprintf(buf, "JUMP %d\n", ctx.start_line);
+        emit(buf);
+
+        patch_jump(ctx.jump_exit_pos, line);  // Skok z warunku głównego (na wejściu)
+        patch_jump(jump_break, line); // Skok z warunku "bezpiecznika" (na końcu)
+
+        pop_iterator();
     }
     | READ identifier ';' {
         Symbol* s = get_symbol_record($2->name);
@@ -545,9 +702,6 @@ args_decl:
         strncpy(p->param_names[0], $2, 23);
         free($2);
     }
-    | {     // bez parametrów
-       procedures[procedure_count].param_count = 0;
-    }
     ;
 
 type:
@@ -618,6 +772,64 @@ expression:
         $$.id_info = NULL;
     }
     ;
+
+condition:
+    value EQ value {
+        manage_value($3);
+        emit("SWP b\n");      // rb = val3 
+        manage_value($1);     // ra = val1 
+        emit("SUB b\n");      // ra = val1 - val3
+        emit("SWP c\n");
+        emit("RST a\n");
+
+        manage_value($1);
+        emit("SWP b\n");       // rb = val1, ra = val3
+        emit("SUB b\n");      // ra = val3 - val1
+        emit("ADD c\n");      // ra = (val3 - val1) + (val1 - val3)
+        $$ = emit_jump_placeholder("JPOS");       
+    }
+    | value NEQ value {
+         manage_value($3);
+        emit("SWP b\n");      // rb = val3 
+        manage_value($1);     // ra = val1 
+        emit("SUB b\n");      // ra = val1 - val3
+        emit("SWP c\n");
+        emit("RST a\n");
+
+        manage_value($1);
+        emit("SWP b\n");       // rb = val1, ra = val3
+        emit("SUB b\n");      // ra = val3 - val1
+        emit("ADD c\n");      // ra = (val3 - val1) + (val1 - val3)     
+        $$ = emit_jump_placeholder("JZERO");
+    }
+    | value GT value {
+        manage_value($3);
+        emit("SWP b\n");        
+        manage_value($1);
+        emit("SUB b\n");        // val1 - val3
+        $$ = emit_jump_placeholder("JZERO");
+    }
+    | value LT value {
+        manage_value($1);
+        emit("SWP b\n");
+        manage_value($3);
+        emit("SUB b\n");        // val3 - val1
+        $$ = emit_jump_placeholder("JZERO");
+    }
+    | value GE value {
+        manage_value($1);
+        emit("SWP b\n");
+        manage_value($3);
+        emit("SUB b\n");
+        $$ = emit_jump_placeholder("JPOS");
+    }
+    | value LE value {
+        manage_value($3);
+        emit("SWP b\n");        
+        manage_value($1);
+        emit("SUB b\n"); 
+        $$ = emit_jump_placeholder("JPOS");
+    }
 
 value:
     NUM {
@@ -714,7 +926,7 @@ void gen_mul() {
     emit("ADD b\n"); 
     emit("SWP c\n");
 
-    patch_jump_zero(even, line);
+    patch_jump(even, line);
 
     emit("SWP b\n"); 
     emit("SHL a\n"); 
@@ -725,7 +937,7 @@ void gen_mul() {
 
     emit("JUMP %d\n", start);
 
-    patch_jump_zero(start, line);
+    patch_jump(start, line);
 
     emit("RST a\n");
     emit("ADD c\n");
@@ -757,7 +969,7 @@ void gen_divmod(int want_mod) {
     emit("SWP e\n"); 
     emit("JUMP %d\n", as);
 
-    patch_jump_pos(aj, line);
+    patch_jump(aj, line);
 
     int cs = line; 
     emit("RST a\n"); 
@@ -780,7 +992,7 @@ void gen_divmod(int want_mod) {
     emit("ADD e\n"); 
     emit("SWP c\n");
 
-    patch_jump_pos(ss, line);
+    patch_jump(ss, line);
 
     emit("SWP d\n"); 
     emit("SHR a\n"); 
@@ -790,8 +1002,8 @@ void gen_divmod(int want_mod) {
     emit("SWP e\n"); 
     emit("JUMP %d\n", cs);
 
-    patch_jump_zero(ce, line); 
-    patch_jump_zero(zero, line); 
+    patch_jump(ce, line); 
+    patch_jump(zero, line); 
 
     emit("RST a\n"); 
     emit("ADD c\n");
