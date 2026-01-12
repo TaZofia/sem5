@@ -330,6 +330,9 @@ void yyerror(const char *s) {
 %token GE
 %token LE
 
+%left PLUS MINUS
+%left TIMES DIV MOD
+
 %type <val> value
 %type <val> expression
 %type <flags> type
@@ -408,20 +411,22 @@ command:
         free($1);
     }
     | READ identifier ';' {
-        Symbol* s = get_symbol_record($2);
-        emit("READ\n"); // Czyta do a (według opisu READ -> ra, k++)
-        
-        if (s->is_ref) {
-            emit("SWP b\n");               
-            emit("LOAD %d\n", s->address); 
-            emit("SWP h\n");               
-            emit("RSTORE h\n");            
-        } else {
-            emit("STORE %d\n", s->address);
+        Symbol* s = get_symbol_record($2->name);
+        if (s->flags & F_CONST) {
+            fprintf(stderr, "[ERROR]: Modification of const %s\n", s->name); exit(1);
         }
+        gen_addr($2);
+        
+        emit("SWP b\n");
+        emit("READ\n");
+        emit("RSTORE b\n");
+
+        s->is_init = 1;
+
         free($2);
     }   
     | WRITE value ';'   {
+        manage_value($2);
         emit("WRITE\n"); 
     }
     | proc_call ';'
@@ -625,7 +630,7 @@ value:
         
         // Sprawdzanie O
         if ((s->flags & F_OUT) && s->is_init == 0) {
-            fprintf(stderr, "[ERROR]: Use of uninitialized O %s\n", s->name); exit(1);
+            fprintf(stderr, "[ERROR]: Use of uninitialized variable (type O): %s\n", s->name); exit(1);
         }
         $$.is_num = 0;
         $$.id_info = $1;
