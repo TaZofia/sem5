@@ -37,15 +37,6 @@ int symbol_count = 0;
 int memory_ptr = 0;     // pierwszy wolny adres w pamięci
 
 
-/* Struktura przekazywana z leksera do parsera dla identyfikatorów */
-/* Pozwala obsłużyć x, tab[5] oraz tab[i] w jednolity sposób */
-typedef struct {
-    char name[64];
-    int access_type;       // 0=zmienna, 1=tab[stała], 2=tab[zmienna]
-    long long idx_const;   // dla tab[5]
-    char idx_var[64];      // dla tab[i]
-} IdInfo;
-
 
 typedef struct {
     char name[64];
@@ -64,6 +55,12 @@ int procedure_count = 0;
 char current_proc_name[64] = "";
 int main_jump_pos = -1;            // pozycja maina
 
+
+void manage_value(Val v);
+void gen_this_number(long long n);
+void gen_mul(void);
+void gen_divmod(int want_mod);
+
 /* Funkcja do szukania procedury */
 int find_procedure(const char* name) {
     for (int i = 0; i < procedure_count; i++) {
@@ -73,7 +70,9 @@ int find_procedure(const char* name) {
     return -1;
 }
 
-
+/* Dodaje symbol, obługuje odpowiednio prefiksy dla zmiennych lokalnych, formalnych i referencji 
+oraz dba o odpowiednią logikę dla tablic. Funckja ta zwraca indeks.
+*/
 int add_symbol(const char *name, int is_ref, int flags, long long low, long long high) {
     if (symbol_count >= 1024) {
         fprintf(stderr, "[ERROR] Too many variables(symbols).\n");
@@ -168,58 +167,52 @@ void gen_addr(IdInfo *info) {
 
     if (s->is_ref) {
         // jeśli referencja to adresem jest wartość zapisana w komórce
-        emit("LOAD %lld\n", s->address);
+        emit("LOAD %d\n", s->address);
     } else {
         // Zmienna zwykła/tablica - adres jest stałą
         gen_this_number(s->address); 
     }
 
     // Jeśli zmienna - adres jest już w ra. Koniec.
-    if (info->type == 0) return;
+    if (info->access_type == 0) return;
 
 
     if (!(s->flags & F_ARRAY)) {
-        fprintf(stderr, "Błąd: %s nie jest tablicą!\n", s->name); exit(1);
+        fprintf(stderr, "[ERROR]: %s ia not an array!\n", s->name); exit(1);
     }
 
     emit("SWP h\n");    // Baza tablicy do rh
 
-    if (info->type == 1) { 
+    if (info->access_type == 1) { 
         // tab[NUM] -> offset stały
-        long long offset = info->idx_num - s->low;
+        long long offset = info->idx_const - s->low;
         gen_this_number(offset); // Wstaw offset do 'a'
     } 
-    else if (info->type == 2) {
+    else if (info->access_type == 2) {
         // tab[VAR] -> offset dynamiczny
         // Musimy pobrać wartość zmiennej indeksującej
-        Symbol* idx = get_symbol_record(info->idx_name);
+        Symbol* idx = get_symbol_record(info->idx_var);
         
         // Załaduj wartość indeksu do 'a'
         if (idx->is_ref) {
-            emit("LOAD %lld\n", idx->address);
-            emit("SWP b\n");
-            emit("RLOAD b\n");
+            emit("LOAD %d\n", idx->address);
+            emit("SWP g\n");
+            emit("RLOAD g\n");
         } else {
-            emit("LOAD %lld\n", idx->address);
+            emit("LOAD %d\n", idx->address);
         }
         
         // Odejmij dolny zakres (low)
-        emit("SWP b\n");
+        emit("SWP g\n");
         gen_this_number(s->low);
-        emit("SWP b\n");
-        emit("SUB b\n"); // a = index - low
+        emit("SWP g\n");
+        emit("SUB g\n"); // a = index - low
     }
 
     
     emit("ADD h\n"); 
     // Teraz w 'a' jest finalny adres komórki tablicy
 }
-
-void manage_value(Val v);
-
-void gen_this_number(long long n);
-
-
 
 // pomocniczy stack do argumentów wywołania 
 char call_args_stack[16][64];
@@ -338,7 +331,6 @@ void yyerror(const char *s) {
 %token LE
 
 %type <val> value
-%type <str> identifier
 %type <val> expression
 %type <flags> type
 %type <id_info> identifier
@@ -360,7 +352,7 @@ procedures:
             fprintf(stderr, "[ERROR] Unknown procedure '%s' at end.\n", current_proc_name);
             exit(1);
         }
-        emit("LOAD %d\n", procedures[index].return_addr_loc);
+        emit("LOAD %d\n", symbols[procedures[index].return_addr_loc].address);
         emit("RTRN\n");
         current_proc_name[0] = '\0';
     }
@@ -370,7 +362,7 @@ procedures:
             fprintf(stderr, "[ERROR] Unknown procedure '%s' at end.\n", current_proc_name);
             exit(1);
         }
-        emit("LOAD %d\n", procedures[index].return_addr_loc);
+        emit("LOAD %d\n", symbols[procedures[index].return_addr_loc].address);
         emit("RTRN\n");
         current_proc_name[0] = '\0';
     }
@@ -399,15 +391,20 @@ commands:
 command:
     identifier ASSIGN expression ';' {
         Symbol* s = get_symbol_record($1);
-        if (s->is_ref) {
-            emit("SWP d\n");               
-            emit("LOAD %d\n", s->address); 
-            emit("SWP h\n");               
-            emit("SWP d\n");               
-            emit("RSTORE h\n");
-        } else {
-            emit("STORE %d\n", s->address);
+
+        if (s->flags & F_CONST) {
+            fprintf(stderr, "[ERROR]: Modification of const %s\n", s->name); exit(1);
         }
+
+        emit("SWP d\n");
+
+        gen_addr($1);
+
+        emit("SWP b\n");     // Adres do rb
+        emit("SWP d\n");     // Wynik do ra
+        emit("RSTORE b\n");  // Zapisujemy ra pod adres rb
+        
+        s->is_init = 1;     // Już zainicjalizowana
         free($1);
     }
     | READ identifier ';' {
@@ -425,7 +422,6 @@ command:
         free($2);
     }   
     | WRITE value ';'   {
-        manage_value($2);
         emit("WRITE\n"); 
     }
     | proc_call ';'
@@ -441,26 +437,25 @@ proc_head:
         }
 
         // Rejestrujemy procedurę
-        Procedure *p = &procedures[procedure_count++];
+        Procedure *p = &procedures[procedure_count];
         strcpy(p->name, name);
         p->start_line = line;   // CALL będzie skakał tutaj
 
-        // Alokujemy komórkę na adres powrotu
-        char ret_name[80];
-        snprintf(ret_name, sizeof(ret_name), "__ret_%s", name);
-        p->return_addr_loc = add_symbol(ret_name, 0);
+        strcpy(current_proc_name, name);
+
+        p->return_addr_loc = add_symbol("return_addr", 0, F_NONE, 0, 0);
 
         for (int i = 0; i < p->param_count; ++i) {
-            char reference_symbol_name[128];
-            snprintf(reference_symbol_name, sizeof(reference_symbol_name), "__ref_%s_%s", name, p->param_names[i]);
-            int index = add_symbol(reference_symbol_name, 1);
+            int flags = p->param_flags[i];
+            int index = add_symbol(p->param_names[i], 1, flags, 0, 0);      // low i high może być równe 0 dla tablic, bo dla referencji nie ma to znaczenia, rozmiar i tak jest w oryginale
+            
             p->param_locs[i] = index;
         }
 
         // Po CALL w rejestrze (np. ra) jest adres powrotu – zapisujemy go
-        emit("STORE %d\n", p->return_addr_loc);
+        emit("STORE %d\n", symbols[p->return_addr_loc].address);
 
-        strcpy(current_proc_name, name);
+        procedure_count++;
         free(name);
     }
     ;
@@ -487,8 +482,6 @@ proc_call:
              fprintf(stderr, "[ERROR]: Wrong arg count for %s\n", name_of_called_proc); exit(1);
         }
 
-        /* jeszcze jeden exception do zrobienia */
-
         for (int i = 0; i < p->param_count; ++i) {
             Symbol* s = get_symbol_record(call_args_stack[i]);
             
@@ -497,8 +490,8 @@ proc_call:
             } else {
                 gen_this_number(s->address);    // przekazujemy wartość
             }
-            
-            emit("STORE %d\n", p->param_locs[i]);
+            int sym_idx = p->param_locs[i];
+            emit("STORE %d\n", symbols[sym_idx].address);
         }
         
         emit("CALL %d\n", p->start_line);   // samo wywołanie procedury
@@ -509,49 +502,46 @@ proc_call:
 
 declarations:
     declarations ',' PIDENTIFIER { 
-        if (current_proc_name[0] != '\0') {
-            char local_variable_name[128];
-            snprintf(local_variable_name, sizeof(local_variable_name), "%s_%s", current_proc_name, $3);
-            add_symbol(local_variable_name, 0, F_NONE, 0, 0);
-        } else {
-            add_symbol($3, 0, F_NONE, 0, 0);
-        }
+        add_symbol($3, 0, F_NONE, 0, 0);
         free($3); 
     }
     | declarations ',' PIDENTIFIER '[' NUM ':' NUM ']' { 
-
-        // to do dokończyć declarations, args_decl, identifier, command, value
+        add_symbol($3, 0, F_ARRAY, $5, $7);
         free($3);
     }
     | PIDENTIFIER { 
-        if (current_proc_name[0] != '\0') {
-            char local_variable_name[128];
-            snprintf(local_variable_name, sizeof(local_variable_name), "%s_%s", current_proc_name, $1);
-            add_symbol(local_variable_name, 0);
-        } else {
-            add_symbol($1, 0);
-        }
+        add_symbol($1, 0, F_NONE, 0, 0);
         free($1); 
     }
-    | PIDENTIFIER '[' NUM ':' NUM ']'                       { free($1);}
+    | PIDENTIFIER '[' NUM ':' NUM ']' { 
+        add_symbol($1, 0, F_ARRAY, $3, $5);
+        free($1); 
+    }
     ;
 
 args_decl:
     args_decl ',' type PIDENTIFIER {
         Procedure *p = &procedures[procedure_count];
+        if (p->param_count >= 16) {
+            fprintf(stderr, "[ERROR] Too many parameters in procedure '%s'.\n", current_proc_name);
+            exit(1);
+        }
         int idx = p->param_count++;
+        p->param_flags[idx] = $3;
         strncpy(p->param_names[idx], $4, 23);
+
         free($4);
     }
     | type PIDENTIFIER {
         Procedure *p = &procedures[procedure_count];
         p->param_count = 1;
+        p->param_flags[0] = $1;
+
         strncpy(p->param_names[0], $2, 23);
         free($2);
     }
-    | {
-        Procedure *p = &procedures[procedure_count];
-        p->param_count = 0;
+    | {     // bez parametrów
+       procedures[procedure_count].param_count = 0;
     }
     ;
 
@@ -561,7 +551,7 @@ type:
     | O           { $$ = F_OUT; }
     | T I         { $$ = F_ARRAY | F_CONST; }
     | T O         { $$ = F_ARRAY | F_OUT; }
-    |             { $$ = F.NONE; }
+    |             { $$ = F_NONE; }
     ;       
 args:
     args ',' PIDENTIFIER {
@@ -583,7 +573,7 @@ expression:
         emit("ADD b\n");            /* dodajemy do rejestru a to co mamy w b */
 
         $$.is_num = 0;              /* bo wynik na razie jest w rejestrze, czyli jest tymczasowy */
-        $$.idn = NULL;
+        $$.id_info = NULL;
     }
     | value MINUS value {
         manage_value($3);
@@ -592,7 +582,7 @@ expression:
         emit("SUB b\n"); 
 
         $$.is_num = 0;
-        $$.idn = NULL;
+        $$.id_info = NULL;
     }
     | value TIMES value {
         manage_value($1);               // ra = 1
@@ -602,7 +592,7 @@ expression:
         gen_mul();          // odpowiednie liczby już są w odpowiednich rejestrach
 
         $$.is_num = 0;
-        $$.idn = NULL;
+        $$.id_info = NULL;
     }
     | value DIV value {
         manage_value($1);               
@@ -611,7 +601,7 @@ expression:
         gen_divmod(0);     // - 0 bo nie chcemy mieć reszty   
 
         $$.is_num = 0;
-        $$.idn = NULL;
+        $$.id_info = NULL;
     }
     | value MOD value {
         manage_value($1);       
@@ -620,7 +610,7 @@ expression:
         gen_divmod(1);        
 
         $$.is_num = 0;
-        $$.idn = NULL;
+        $$.id_info = NULL;
     }
     ;
 
@@ -628,16 +618,45 @@ value:
     NUM {
         $$.is_num = 1;
         $$.num = $1;
-        $$.idn = NULL;
+        $$.id_info = NULL;
     }
     | identifier {
+        Symbol* s = get_symbol_record($1->name);
+        
+        // Sprawdzanie O
+        if ((s->flags & F_OUT) && s->is_init == 0) {
+            fprintf(stderr, "[ERROR]: Use of uninitialized O %s\n", s->name); exit(1);
+        }
         $$.is_num = 0;
-        $$.idn = $1;
+        $$.id_info = $1;
     }
     ;
 
 identifier:
-    PIDENTIFIER    { $$ = $1; }
+    PIDENTIFIER {
+        IdInfo* info = (IdInfo*)malloc(sizeof(IdInfo));
+        strcpy(info->name, $1);
+        info->access_type = 0; // Zwykła zmienna
+        free($1);
+        $$ = info;
+    }
+    | PIDENTIFIER '[' PIDENTIFIER ']' {
+        IdInfo* info = (IdInfo*)malloc(sizeof(IdInfo));
+        strcpy(info->name, $1);
+        info->access_type = 2;     // Tablica ze zmienną
+        strcpy(info->idx_var, $3);
+
+        free($1); free($3);
+        $$ = info;
+    }
+    | PIDENTIFIER '[' NUM ']' {
+        IdInfo* info = (IdInfo*)malloc(sizeof(IdInfo));
+        strcpy(info->name, $1);
+        info->access_type = 1;     // Tablica ze stałą
+        info->idx_const = $3;
+        free($1);
+        $$ = info;
+    }
     ;
 %%
 
@@ -663,16 +682,10 @@ void manage_value(Val v) {
     if(v.is_num) {
         gen_this_number(v.num);
     } else {
-        Symbol* s = get_symbol_record(v.idn);
-        if (s->is_ref) {
-            // To jest parametr, czyli w s->address znajduje się ADRES prawdziwej zmiennej.
-            emit("LOAD %d\n", s->address); 
-            emit("SWP h\n");              
-            emit("RLOAD h\n");             // ra = wartość zmiennej
-        } else {
-            // Zwykła zmienna globalna
-            emit("LOAD %d\n", s->address);
-        }
+        gen_addr(v.id_info);
+
+        emit("SWP g\n");   // adres do g
+        emit("RLOAD g\n"); // wartość spod adresu znajdującym się w rg pobieram do ra
     }
 } 
 
@@ -783,7 +796,14 @@ void gen_divmod(int want_mod) {
     }
 }
 
-
+void debug_print_symbols() {
+    printf("--- SYMBOL TABLE DUMP ---\n");
+    for(int i=0; i<symbol_count; i++) {
+        printf("ID: %d | Name: %s | Addr: %d | IsRef: %d\n", 
+               i, symbols[i].name, symbols[i].address, symbols[i].is_ref);
+    }
+    printf("-------------------------\n");
+}
 
 
 int main(int argc, char **argv) {
@@ -806,6 +826,7 @@ int main(int argc, char **argv) {
     }
 
     yyparse();
+    debug_print_symbols();
 
     for (int i = 0; i < line; i++)
         fprintf(out, "%s", program[i]);
