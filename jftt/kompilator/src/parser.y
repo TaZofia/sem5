@@ -128,6 +128,41 @@ int add_symbol(const char *name, int is_ref, int flags, long long low, long long
     return symbol_count++;
 }
 
+/* Dodawnie iteratorów do pamięci - staje się zmienną lokalną */
+int add_iterator_symbol(char* name) {
+    if (symbol_count >= 1024) {
+        fprintf(stderr, "[ERROR] Too many symbols (iterator).\n");
+        exit(1);
+    }
+
+    // W nazwie uwwzgęldniam procedurę, w której jestem
+    char scoped_name[128];
+    if (current_proc_name[0]) {
+        snprintf(scoped_name, 128, "%s_%s", current_proc_name, name);
+    } else {
+        strcpy(scoped_name, name);
+    }
+
+    // Dodanie na koniec tablicy symboli
+    Symbol *s = &symbols[symbol_count];
+    strcpy(s->name, scoped_name);
+    s->flags = F_NONE; // Iterator traktujemy jak zwykłą zmienną
+    s->is_ref = 0;
+    s->low = 0; 
+    s->high = 0;
+    s->is_init = 1; // Iterator jest inicjalizowany od razu
+    s->address = memory_ptr++; // Przydzielamy nową komórkę pamięci
+
+    return symbol_count++;
+}
+
+// Usuwa ostatni symbol (używane po wyjściu z pętli FOR)
+void remove_iterator_symbol() {
+    if (symbol_count > 0) {
+        symbol_count--;
+    }
+}
+
 Symbol* get_symbol_record(const char* name) {
     
     // Najpierw sprawdzamy czy mamy zmienną lokalną (priorytet)
@@ -135,7 +170,7 @@ Symbol* get_symbol_record(const char* name) {
         char local_var_name[128];
         snprintf(local_var_name, sizeof(local_var_name), "%s_%s", current_proc_name, name);
         
-        for(int i = 0; i < symbol_count; i++) {
+        for(int i = symbol_count - 1; i >= 0; i--) {
             if (strcmp(symbols[i].name, local_var_name) == 0) {
                 return &symbols[i];
             }
@@ -147,7 +182,7 @@ Symbol* get_symbol_record(const char* name) {
         char ref_name[128];
         snprintf(ref_name, sizeof(ref_name), "__ref_%s_%s", current_proc_name, name);
         
-        for(int i = 0; i < symbol_count; i++) {
+        for(int i = symbol_count - 1; i >= 0; i--) {
             if (strcmp(symbols[i].name, ref_name) == 0) {
                 return &symbols[i];
             }
@@ -155,7 +190,7 @@ Symbol* get_symbol_record(const char* name) {
     }
 
     // Następnie zmienne globalne
-    for(int i = 0; i < symbol_count; i++){
+    for(int i = symbol_count - 1; i >= 0; i--){
         if (strcmp(symbols[i].name, name) == 0) {
             return &symbols[i];
         }
@@ -300,7 +335,7 @@ void check_iterator_modification(char* name) {
     for (int i = 0; i <= iterator_top; i++) {
         if (strcmp(iterator_stack[i], name) == 0) {
             char buf[100];
-            sprintf(buf, "Blad: Proba modyfikacji iteratora petli '%s' wewnatrz petli!", name);
+            sprintf(buf, "[ERROR] Attempt to modify the iterator '%s' inside the loop!", name);
             yyerror(buf);
         }
     }
@@ -448,6 +483,8 @@ command:
     identifier ASSIGN expression ';' {
         Symbol* s = get_symbol_record($1);
 
+        check_iterator_modification($1->name);
+
         if (s->flags & F_CONST) {
             fprintf(stderr, "[ERROR]: Modification of const %s\n", s->name); exit(1);
         }
@@ -484,13 +521,21 @@ command:
         patch_jump($5, $<num>2);
     }
     | FOR PIDENTIFIER FROM value TO value DO {
-        int iter_addr = get_symbol_addr($2);
+
+        int start_val_addr = memory_ptr++;
         manage_value($4);
-        emit("STORE %d\n", iter_addr);
+        emit("STORE %d\n", start_val_addr);
 
         int limit_addr = memory_ptr++;
         manage_value($6);
         emit("STORE %d\n", limit_addr);
+
+        int iter_sym_idx = add_iterator_symbol($2);
+        int iter_addr = symbols[iter_sym_idx].address;
+
+        emit("LOAD %d\n", start_val_addr);
+        emit("STORE %d\n", iter_addr);
+
 
         // zabezpieczenie iteratora przed modyfikacją
         push_iterator($2);
@@ -519,16 +564,25 @@ command:
         emit(buf);
 
         patch_jump(ctx.jump_exit_pos, line);
-        pop_iterator();        
+        pop_iterator();  
+        remove_iterator_symbol();
+        free($2);      
     }
     | FOR PIDENTIFIER FROM value DOWNTO value DO {
-        int iter_addr = get_symbol_addr($2);
+        int start_val_addr = memory_ptr++;
         manage_value($4);
-        emit("STORE %d\n", iter_addr);
+        emit("STORE %d\n", start_val_addr);
 
         int limit_addr = memory_ptr++;
         manage_value($6);
         emit("STORE %d\n", limit_addr);
+
+        int iter_sym_idx = add_iterator_symbol($2);
+        int iter_addr = symbols[iter_sym_idx].address;
+
+        emit("LOAD %d\n", start_val_addr);
+        emit("STORE %d\n", iter_addr);
+
 
         push_iterator($2);
 
@@ -566,8 +620,12 @@ command:
         patch_jump(jump_break, line); // Skok z warunku "bezpiecznika" (na końcu)
 
         pop_iterator();
+        remove_iterator_symbol();
+        free($2);
     }
     | READ identifier ';' {
+        check_iterator_modification($2->name);
+
         Symbol* s = get_symbol_record($2->name);
         if (s->flags & F_CONST) {
             fprintf(stderr, "[ERROR]: Modification of const %s\n", s->name); exit(1);
