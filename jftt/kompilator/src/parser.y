@@ -880,18 +880,30 @@ identifier:
 
 /* Funkcja ma na celu zapisanie w rejestrze ra wartości równej n*/
 void gen_this_number(long long n) {
-    if (n < 0) {
-        fprintf(stderr, "[ERROR] Negative constants not supported: %lld\n", n);
-        exit(1);
+    if (n == 0) {
+        emit("RST a\n");
+        return;
     }
 
-    emit("RST c\n");      
-
-    for (long long i = 0; i < n; i++) {
-        emit("INC c\n");  
+    // Znajdź bity liczby
+    int bits[64];
+    int k = 0;
+    long long temp = n;
+    while (temp > 0) {
+        bits[k++] = temp % 2;
+        temp /= 2;
     }
 
-    emit("SWP c\n");     
+    // Generuj liczbę od najstarszego bitu
+    emit("RST a\n");
+    emit("INC a\n"); // Pierwszy bit (MSB) to zawsze 1 dla n > 0
+
+    for (int i = k - 2; i >= 0; i--) {
+        emit("SHL a\n"); // Przesunięcie w lewo (mnożenie przez 2)
+        if (bits[i]) {
+            emit("INC a\n"); // Dodanie 1, jeśli bit wynosi 1
+        }
+    }    
 }
 
 /* funkcja odpowiedzialna za załadowanie liczby/wartości zmiennej do rejestru ra */
@@ -1003,10 +1015,22 @@ void gen_divmod(int want_mod) {
     emit("JUMP %d\n", cs);
 
     patch_jump(ce, line); 
+
+    /* ominięcie obsługi zera */
+    
+    int skip_zero_handler = line;
+    emit("JUMP 0\n");
+
     patch_jump(zero, line); 
 
     emit("RST a\n"); 
-    emit("ADD c\n");
+    emit("RST b\n");
+    emit("RST c\n");
+
+    patch_jump(skip_zero_handler, line);
+
+    emit("RST a\n"); 
+    emit("ADD c\n");    // ra = rc. Dla 0 c=0 więc a=0
 
     if(want_mod) {
         emit("SWP b\n");
