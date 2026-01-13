@@ -117,12 +117,21 @@ int add_symbol(const char *name, int is_ref, int flags, long long low, long long
     if (flags & F_OUT) s->is_init = 0; else s->is_init = 1;     
 
     s->address = memory_ptr;
-    if (flags & F_ARRAY && !is_ref) {
-        if (low > high) { fprintf(stderr, "[ERROR] Array range error.\n"); exit(1); }
-        memory_ptr += (high - low + 1);     // rezerwujemy miejsce na całą tablicę 
+    if (is_ref) {
+        // Parametr (referencja) zajmuje teraz tylko 1 komórkę (sam adres)
+        // Bo "low" odczytamy sobie z pamięci, pod tym adresem.
+        memory_ptr++; 
     } else {
-        // Zmienna lub referencja - zajmuje 1 komórkę
-        memory_ptr++;
+        // Zmienna lokalna/globalna
+        if (flags & F_ARRAY) {
+            if (low > high) { fprintf(stderr, "[ERROR] Array range error.\n"); exit(1); }
+            
+            // ZMIANA: Rezerwujemy rozmiar + 1 (na nagłówek z wartością low)
+            memory_ptr += (high - low + 1) + 1;     
+        } else {
+            // Zwykła zmienna
+            memory_ptr++;
+        }
     }
 
     return symbol_count++;
@@ -667,7 +676,8 @@ proc_head:
 
         for (int i = 0; i < p->param_count; ++i) {
             int flags = p->param_flags[i];
-            int index = add_symbol(p->param_names[i], 1, flags, 0, 0);      // low i high może być równe 0 dla tablic, bo dla referencji nie ma to znaczenia, rozmiar i tak jest w oryginale
+            // znaleźć jakoś paramter
+            int index = add_symbol(p->param_names[i], 1, flags, 0, 0); 
             
             p->param_locs[i] = index;
         }
@@ -726,7 +736,9 @@ declarations:
         free($3); 
     }
     | declarations ',' PIDENTIFIER '[' NUM ':' NUM ']' { 
-        add_symbol($3, 0, F_ARRAY, $5, $7);
+        int idx = add_symbol($3, 0, F_ARRAY, $5, $7);
+        gen_this_number($5);
+        emit("STORE %d\n", symbols[idx].address);
         free($3);
     }
     | PIDENTIFIER { 
@@ -734,7 +746,9 @@ declarations:
         free($1); 
     }
     | PIDENTIFIER '[' NUM ':' NUM ']' { 
-        add_symbol($1, 0, F_ARRAY, $3, $5);
+        int idx = add_symbol($1, 0, F_ARRAY, $3, $5);
+        gen_this_number($5);
+        emit("STORE %d\n", symbols[idx].address);
         free($1); 
     }
     ;
