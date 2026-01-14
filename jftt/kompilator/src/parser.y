@@ -215,57 +215,80 @@ Symbol* get_symbol_record(const char* name) {
 int get_symbol_addr(const char* name) {
     return get_symbol_record(name)->address;
 }
-
 void gen_addr(IdInfo *info) {
     Symbol* s = get_symbol_record(info->name); 
 
+    // Pobranie bazy
     if (s->is_ref) {
-        // jeśli referencja to adresem jest wartość zapisana w komórce
         emit("LOAD %d\n", s->address);
     } else {
-        // Zmienna zwykła/tablica - adres jest stałą
         gen_this_number(s->address); 
     }
 
-    // Jeśli zmienna - adres jest już w ra. Koniec.
+    // Jeśli to nie tablica, adres jest już w ra. Koniec.
     if (info->access_type == 0) return;
 
-
     if (!(s->flags & F_ARRAY)) {
-        fprintf(stderr, "[ERROR]: %s ia not an array!\n", s->name); exit(1);
+        fprintf(stderr, "[ERROR]: %s is not an array!\n", s->name); exit(1);
     }
 
-    emit("SWP h\n");    // Baza tablicy do rh
+    emit("SWP h\n");    // Adres bazowy do rh
 
-    if (info->access_type == 1) { 
-        // tab[NUM] -> offset stały
-        long long offset = info->idx_const - s->low;
-        gen_this_number(offset); // Wstaw offset do 'a'
-    } 
-    else if (info->access_type == 2) {
-        // tab[VAR] -> offset dynamiczny
-        // Musimy pobrać wartość zmiennej indeksującej
-        Symbol* idx = get_symbol_record(info->idx_var);
-        
-        // Załaduj wartość indeksu do 'a'
-        if (idx->is_ref) {
-            emit("LOAD %d\n", idx->address);
-            emit("SWP g\n");
-            emit("RLOAD g\n");
+    if (s->is_ref) {
+        // Odczytujemy low, które znajduje się pod adresem bazowym, który jest w rh
+        emit("RLOAD h\n"); // ra = low
+        emit("SWP f\n");   // rf = low
+
+        // Teraz odczytywany indeks ładujemy do ra
+        if (info->access_type == 1) { 
+            // tab[STALA]
+            gen_this_number(info->idx_const);
         } else {
-            emit("LOAD %d\n", idx->address);
+            // tab[ZMIENNA]
+            Symbol* idx = get_symbol_record(info->idx_var);
+            if (idx->is_ref) {
+                emit("LOAD %d\n", idx->address);
+                emit("SWP g\n");
+                emit("RLOAD g\n");
+            } else {
+                emit("LOAD %d\n", idx->address);
+            }
         }
-        
-        // Odejmij dolny zakres (low)
-        emit("SWP g\n");
-        gen_this_number(s->low);
-        emit("SWP g\n");
-        emit("SUB g\n"); // a = index - low
+        // Obliczamy offset: Index - Low
+        emit("SUB f\n"); 
+    } 
+    // przypadek, że tablica nie jest referencją
+    else {
+        if (info->access_type == 1) { 
+            long long offset = info->idx_const - s->low;
+            gen_this_number(offset); 
+        } 
+        else {
+            Symbol* idx = get_symbol_record(info->idx_var);
+            
+            if (idx->is_ref) {
+                emit("LOAD %d\n", idx->address);
+                emit("SWP g\n");
+                emit("RLOAD g\n");
+            } else {
+                emit("LOAD %d\n", idx->address);
+            }
+            
+            // Odejmowanie low
+            emit("SWP f\n");
+            gen_this_number(s->low);
+            emit("SWP f\n");
+            emit("SUB f\n"); // a = index - low
+        }
     }
 
+
+    // W ra jest teraz indeks - low
+    // Dodajemy 1 żeby pominąć komórkę pamięci, w której było zapisane low
+    emit("INC a\n"); 
     
+    // Dodajemy adres bazowy, żeby mieć: Baza + 1 + indeks - low
     emit("ADD h\n"); 
-    // Teraz w 'a' jest finalny adres komórki tablicy
 }
 
 // pomocniczy stack do argumentów wywołania 
@@ -469,11 +492,12 @@ procedures:
     | ;
 
 main:
-    PROGRAM IS declarations IN {
+    PROGRAM IS {
         // Łatamy początkowy skok nad procedurami
         if (main_jump_pos >= 0) {
             patch_jump(main_jump_pos, line);
         }
+    } declarations IN {
         current_proc_name[0] = '\0';
     } commands END 
     | PROGRAM IS IN {
@@ -747,7 +771,7 @@ declarations:
     }
     | PIDENTIFIER '[' NUM ':' NUM ']' { 
         int idx = add_symbol($1, 0, F_ARRAY, $3, $5);
-        gen_this_number($5);
+        gen_this_number($3);
         emit("STORE %d\n", symbols[idx].address);
         free($1); 
     }
